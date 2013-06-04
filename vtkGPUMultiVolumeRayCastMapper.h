@@ -41,7 +41,8 @@ public:
   vtkTypeMacro(vtkGPUMultiVolumeRayCastMapper,vtkVolumeMapper);
   void PrintSelf( ostream& os, vtkIndent indent );
 
-  // Define the Input for both datasets 
+  // Define the Input for both datasets
+  using vtkVolumeMapper::SetInput;
   void SetInput( int port, vtkImageData *input );
   void SetInput( int port, vtkDataSet *genericInput );
   vtkImageData * GetInput( int port=0);
