@@ -2168,7 +2168,7 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::LoadExtensions(
   // It does not work on Apple OS X Snow Leopard with nVidia.
   // There is a bug in the OpenGL driver with an error in the
   // Cg compiler about an infinite loop.
-#ifndef APPLE_SNOW_LEOPARD_BUG
+#ifdef APPLE_SNOW_LEOPARD_BUG
  #ifdef __APPLE__
   this->LoadExtensionsSucceeded=0;
   return;
