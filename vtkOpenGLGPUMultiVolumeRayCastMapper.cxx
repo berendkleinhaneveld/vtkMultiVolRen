@@ -6274,7 +6274,8 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
           this->ClipBoundingBox(ren,blocks[k].Bounds,volume);
 
           // Adds texture coordinate transform to shader
-          vtkMatrix4x4* mat = TextureCoord_1to2->GetMatrix();
+          vtkMatrix4x4* mat = vtkMatrix4x4::New();
+          mat->DeepCopy(TextureCoord_1to2->GetMatrix());
           mat->Transpose();
           // prepare matrix for shader
           GLfloat matrix_TextureCoord_1to2[16];   
@@ -6288,7 +6289,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
           v->SetUniformMatrix("P1toP2",4,4,matrix_TextureCoord_1to2);
 
           // Add inverse matrix
-          mat = TextureCoord_1to2->GetMatrix();
+          mat->DeepCopy(TextureCoord_1to2->GetMatrix());
           mat->Invert();
           mat->Transpose();
           // prepare matrix for shader
@@ -6299,6 +6300,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
                 static_cast<GLfloat>(mat->Element[c][r]);
             }
           }
+          mat->Delete();
           //vtkUniformVariables *v=this->Program->GetUniformVariables();
           v->SetUniformMatrix("P2toP1",4,4,matrix_TextureCoord_2to1);
 
@@ -6441,7 +6443,8 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
   this->ClipBoundingBox(ren,bounds,volume);
   
     // Adds texture coordinate transform to shader
-    vtkMatrix4x4* mat = TextureCoord_1to2->GetMatrix();
+    vtkMatrix4x4* mat = vtkMatrix4x4::New();
+    mat->DeepCopy(TextureCoord_1to2->GetMatrix());
     mat->Transpose();
     // prepare matrix for shader
     GLfloat matrix_TextureCoord_1to2[16];   
@@ -6455,7 +6458,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     v->SetUniformMatrix("P1toP2",4,4,matrix_TextureCoord_1to2);
 
     // Add inverse matrix
-    mat = TextureCoord_1to2->GetMatrix();
+    mat->DeepCopy(TextureCoord_1to2->GetMatrix());
     mat->Invert();
     mat->Transpose();
     // prepare matrix for shader
@@ -6466,6 +6469,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
           static_cast<GLfloat>(mat->Element[c][r]);
       }
     }
+    mat->Delete();
     //vtkUniformVariables *v=this->Program->GetUniformVariables();
     v->SetUniformMatrix("P2toP1",4,4,matrix_TextureCoord_2to1);
 
