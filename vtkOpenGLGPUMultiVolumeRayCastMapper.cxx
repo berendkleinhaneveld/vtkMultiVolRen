@@ -3526,11 +3526,12 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::ClipBoundingBox(vtkRenderer *ren,
 {
   // Pass camera through inverse volume matrix
   // so that we are in the same coordinate system
-  vol->GetMatrix( this->InvVolumeMatrix );
+  this->InvVolumeMatrix->DeepCopy(vol->GetMatrix());
   this->InvVolumeMatrix->Invert();
   // Normals should be transformed using the transpose of the
   // invert of InvVolumeMatrix.
-  vtkMatrix4x4::Transpose(vol->GetMatrix(),this->TempMatrix[0]);
+  this->TempMatrix[0]->DeepCopy(vol->GetMatrix());
+  this->TempMatrix[0]->Transpose();
 
   if(this->BoxSource==0)
     {
@@ -5408,7 +5409,7 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::RenderRegions(vtkRenderer *ren,
   
   // Pass camera through inverse volume matrix
   // so that we are in the same coordinate system
-  vol->GetMatrix( this->InvVolumeMatrix );
+  this->InvVolumeMatrix->DeepCopy(vol->GetMatrix());
   camPos[3] = 1.0;
   this->InvVolumeMatrix->Invert();
   this->InvVolumeMatrix->MultiplyPoint( camPos, camPos );
@@ -5946,7 +5947,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
         double camPos[4];
         vtkCamera *cam = ren->GetActiveCamera();
         cam->GetPosition(camPos);
-        volume->GetMatrix( this->InvVolumeMatrix );
+        this->InvVolumeMatrix->DeepCopy(volume->GetMatrix());
         camPos[3] = 1.0;
         this->InvVolumeMatrix->Invert();
         this->InvVolumeMatrix->MultiplyPoint( camPos, camPos );
