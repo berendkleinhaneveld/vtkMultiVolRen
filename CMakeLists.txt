@@ -125,6 +125,7 @@ SET(VTK_LOCAL_LIBS
   vtkRenderingFreeTypeOpenGL
   vtkRenderingVolumeOpenGL
   vtkInteractionWidgets
+  vtkIOXML
 )
 
 # Hide warnings about using deprecated function calls
