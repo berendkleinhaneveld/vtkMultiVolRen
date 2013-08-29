@@ -23,11 +23,15 @@
 // a helper class responsible for drawing the image to the screen.
 
 // .SECTION see also
-// vtkGPUVolumeRayCastMapper
-
+// vtkGPUMultiVolumeRayCastMapper
+//
+// .SECTION Thanks
+// Thanks to Michael Granseier for helping to debug this class with respect
+// to maximum memory issues (which must be specified as vtkIdType and not int).
 #ifndef __vtkOpenGLGPUMultiVolumeRayCastMapper_h
 #define __vtkOpenGLGPUMultiVolumeRayCastMapper_h
 
+#include "vtkRenderingVolumeOpenGLModule.h" // For export macro
 #include "vtkGPUMultiVolumeRayCastMapper.h"
 
 class vtkVolume;
@@ -56,9 +60,7 @@ class vtkShader2;
 
 class vtkTransform;
 
-#include "vtkSmartPointer.h"
 
-class VTK_VOLUMERENDERING_EXPORT vtkOpenGLGPUMultiVolumeRayCastMapper : public vtkGPUMultiVolumeRayCastMapper
 {
 public:
   static vtkOpenGLGPUMultiVolumeRayCastMapper *New();
@@ -148,7 +150,6 @@ protected:
   int AllocateFrameBuffers(vtkRenderer *ren);
 
   // Description
-  // Load the two scalar fields (one or four component scalar field), cell or point
   // based for a given subextent of the whole extent (can be the whole extent)
   // as a 3D texture on the GPU.
   // Extents are expressed in point if the cell flag is false or in cells of
@@ -159,7 +160,7 @@ protected:
   // and LoadedTime. It also succeed if the scalar field is already loaded
   // (ie since last load, input has not changed and cell flag has not changed
   // and requested texture extents are enclosed in the loaded extent).
-  // \pre input_exists: input!=0 
+  // \pre input_exists: input!=0
   // \pre valid_point_extent: (this->CellFlag ||
   //                           (textureExtent[0]<textureExtent[1] &&
   //                            textureExtent[2]<textureExtent[3] &&
@@ -254,7 +255,7 @@ protected:
   // Description:
   // Concatenate the header string, projection type code and method to the
   // final fragment code in this->FragmentCode.
-  // \pre valid_raycastMethod: raycastMethod>= vtkOpenGLGPUMultiVolumeRayCastMapperMethodMaximumIntensityProjection && raycastMethod<=vtkOpenGLGPUMultiVolumeRayCastMapperMethodMinIPFourDependent
+  // \pre valid_raycastMethod: raycastMethod>= vtkOpenGLGPUVolumeRayCastMapperMethodMaximumIntensityProjection && raycastMethod<=vtkOpenGLGPUVolumeRayCastMapperMethodMinIPFourDependent
   void BuildProgram(vtkRenderWindow *w,
                     int parallelProjection,
                     int raycastMethod,
@@ -452,19 +453,16 @@ protected:
   vtkKWScalarField *CurrentScalar2;
   vtkKWMask *CurrentMask;
 
-
-  /**
-   * @brief transformation that convert texture coordinates from the first 
-   * to the second input volume.
-   **/
-  vtkSmartPointer<vtkTransform> TextureCoord_1to2;
+   // transformation that convert texture coordinates from the first 
+   // to the second input volume.
+  vtkTransform *TextureCoord_1to2;
 
   float ActualSampleDistance;
-  
+
   double LastProgressEventTime; // initial value is 0.0. Expressed in seconds.
 
   bool PreserveOrientation;
-  
+
   vtkShaderProgram2 *Program;
   vtkShader2 *Main;
   vtkShader2 *Projection;
@@ -473,8 +471,6 @@ protected:
   vtkShader2 *Component;
   vtkShader2 *Shade;
 
-  
-  
   // Internal Variable used to keep track of whether or render window's size
   // changed and therefore we need re-allocation.
   bool        SizeChanged;

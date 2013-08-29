@@ -24,17 +24,16 @@
 #ifndef __vtkGPUMultiVolumeRayCastMapper_h
 #define __vtkGPUMultiVolumeRayCastMapper_h
 
+#include "vtkRenderingVolumeModule.h" // For export macro
 #include "vtkVolumeMapper.h"
-
 
 class vtkVolumeProperty;
 class vtkRenderWindow;
-class vtkImageData;
 class vtkTransform;
 
 //class vtkKWAMRVolumeMapper; // friend class.
 
-class VTK_VOLUMERENDERING_EXPORT vtkGPUMultiVolumeRayCastMapper : public vtkVolumeMapper
+class VTKRENDERINGVOLUME_EXPORT vtkGPUMultiVolumeRayCastMapper : public vtkVolumeMapper
 {
 public:
   static vtkGPUMultiVolumeRayCastMapper *New();
@@ -42,10 +41,10 @@ public:
   void PrintSelf( ostream& os, vtkIndent indent );
 
   // Define the Input for both datasets
-  using vtkVolumeMapper::SetInput;
-  void SetInput( int port, vtkImageData *input );
-  void SetInput( int port, vtkDataSet *genericInput );
-  vtkImageData * GetInput( int port=0);
+  using vtkVolumeMapper::SetInputData;
+  void SetInputData( int port, vtkImageData *input );
+  void SetInputData( int port, vtkDataSet *genericInput );
+  vtkImageData * GetInputData( int port=0);
  
   // set/get the properties of the second volume
   void SetProperty2(vtkVolumeProperty *property);
@@ -194,7 +193,7 @@ public:
   // standard color transfer function when the mask is true. This is relevant
   // only for the label map mask.
   //   0.0 means only standard color transfer function.
-  //   1.0 means only mask color tranfer function.
+  //   1.0 means only mask color transfer function.
   // The default value is 1.0.
   vtkSetClampMacro(MaskBlendFactor,float,0.0f,1.0f);
   vtkGetMacro(MaskBlendFactor,float);
@@ -319,9 +318,7 @@ protected:
   vtkImageData * MaskInput;
   float          MaskBlendFactor;
   int            MaskType;
-
   vtkImageData * TransformedInput;
-  // need to duplicate the TransformedInput
   vtkImageData * TransformedInput2;
 
   vtkGetObjectMacro(TransformedInput, vtkImageData);
@@ -336,7 +333,6 @@ protected:
   vtkImageData* LastInput;
   vtkImageData* LastInput2;
   
-  //
   vtkTransform* SecondInputUserTransform;
 
 private:

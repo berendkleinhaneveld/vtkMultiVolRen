@@ -15,10 +15,9 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-
 #include "vtkGPUMultiVolumeRayCastMapper.h"
 
-#include "vtkVolumeRenderingFactory.h"
+#include "vtkObjectFactory.h"
 #include "vtkImageData.h"
 #include "vtkPointData.h"
 #include "vtkCellData.h"
@@ -43,13 +42,11 @@
 #include "vtkDataSet.h"
 #include "vtkExecutive.h"
 
-vtkInstantiatorNewMacro(vtkGPUMultiVolumeRayCastMapper);
-vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, MaskInput, 
-                     vtkImageData);
-vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, TransformedInput,  
-                     vtkImageData);
-vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, TransformedInput2, 
-                     vtkImageData);
+// Return NULL if no override is supplied.
+vtkAbstractObjectFactoryNewMacro(vtkGPUMultiVolumeRayCastMapper)
+vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, MaskInput, vtkImageData);
+vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, TransformedInput, vtkImageData);
+vtkCxxSetObjectMacro(vtkGPUMultiVolumeRayCastMapper, TransformedInput2, vtkImageData);
 
 vtkGPUMultiVolumeRayCastMapper::vtkGPUMultiVolumeRayCastMapper()
 {
@@ -142,27 +139,27 @@ vtkTransform *vtkGPUMultiVolumeRayCastMapper::
 
 // ----------------------------------------------------------------------------
 //New functions added
-void vtkGPUMultiVolumeRayCastMapper::SetInput( int port, vtkDataSet *genericInput )
+void vtkGPUMultiVolumeRayCastMapper::SetInputData( int port, vtkDataSet *genericInput )
 {
   vtkImageData *input = 
     vtkImageData::SafeDownCast( genericInput );
   
   if ( input )
     {
-    SetInput( port, input );
+    SetInputData( port, input );
     }
   else
     {
-    vtkErrorMacro("The SetInput method of this mapper requires vtkImageData as input");
+    vtkErrorMacro("The SetInputData method of this mapper requires vtkImageData as input");
     }
 }
 
 // ----------------------------------------------------------------------------
-void vtkGPUMultiVolumeRayCastMapper::SetInput( int port, vtkImageData *input )
+void vtkGPUMultiVolumeRayCastMapper::SetInputData( int port, vtkImageData *input )
 {
   if(input)
     {
-    this->SetInputConnection(port, input->GetProducerPort());
+    this->SetInputDataInternal(port, input);
     }
   else
     {
@@ -172,7 +169,7 @@ void vtkGPUMultiVolumeRayCastMapper::SetInput( int port, vtkImageData *input )
 }
 
 
-vtkImageData * vtkGPUMultiVolumeRayCastMapper::GetInput(int port)
+vtkImageData * vtkGPUMultiVolumeRayCastMapper::GetInputData(int port)
 {
   if (this->GetNumberOfInputConnections(port) < 1)
     {
@@ -215,13 +212,13 @@ vtkVolumeProperty *vtkGPUMultiVolumeRayCastMapper::GetProperty2()
 
 
 // ----------------------------------------------------------------------------
-vtkGPUMultiVolumeRayCastMapper *vtkGPUMultiVolumeRayCastMapper::New()
-{
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret =
-    vtkVolumeRenderingFactory::CreateInstance("vtkGPUMultiVolumeRayCastMapper");
-  return static_cast<vtkGPUMultiVolumeRayCastMapper*>(ret);
-}
+// vtkGPUMultiVolumeRayCastMapper *vtkGPUMultiVolumeRayCastMapper::New()
+// {
+//   // First try to create the object from the vtkObjectFactory
+//   vtkObject* ret =
+//     vtkVolumeRenderingFactory::CreateInstance("vtkGPUMultiVolumeRayCastMapper");
+//   return static_cast<vtkGPUMultiVolumeRayCastMapper*>(ret);
+// }
 
 // ----------------------------------------------------------------------------
 // The render method that is called from the volume. If this is a canonical
@@ -358,8 +355,8 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
     }
 
   // Check that we have input data
-  vtkImageData *input =this->GetInput(0);
-  vtkImageData *input2=this->GetInput(1);
+  vtkImageData *input =this->GetInputData(0);
+  vtkImageData *input2=this->GetInputData(1);
 
   if(goodSoFar && (input==0||input2==0))
     {
@@ -369,8 +366,7 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
 
   if(goodSoFar)
     {
-    input->Update();
-    input2->Update();
+    this->GetInputAlgorithm()->Update();
     }
 
   // If we have a timestamp change or data change then create a new clone.
@@ -380,21 +376,21 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
                    || input2 != this->LastInput2 
                    || input2->GetMTime() > this->TransformedInput2->GetMTime()
                   ))
-  {
+    {
     this->LastInput  = input;
     this->LastInput2 = input2;
 
     vtkImageData* clone;
     if(!this->TransformedInput)
-    {
+      {
       clone = vtkImageData::New();
       this->SetTransformedInput(clone);
       clone->Delete();
-    }
+      }
     else
-    {
+      {
       clone = this->TransformedInput;
-    }
+      }
 
     clone->ShallowCopy(input);
 
@@ -429,12 +425,12 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
     clone->GetSpacing(spacing);
 
     for (int cc=0; cc < 3; cc++)
-    {
+      {
       // Transform the origin and the extents.
       origin[cc] = origin[cc] + extents[2*cc]*spacing[cc];
       extents[2*cc+1] -= extents[2*cc];
       extents[2*cc] -= extents[2*cc];
-    }
+      }
 
     clone->SetOrigin(origin);
     clone->SetExtent(extents);
@@ -468,11 +464,6 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
   vtkDataArray *scalars2 = NULL;
   if ( goodSoFar )
     {
-    // Here is where we update the input
-    this->TransformedInput->UpdateInformation();
-    this->TransformedInput->SetUpdateExtentToWholeExtent();
-    this->TransformedInput->Update();
-
     // Now make sure we can find scalars
     scalars=this->GetScalars(this->TransformedInput,this->ScalarMode,
                              this->ArrayAccessMode,
@@ -493,11 +484,6 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
       goodSoFar = 0;
       }
 
-    // Here is where we update the second input
-    this->TransformedInput2->UpdateInformation();
-    this->TransformedInput2->SetUpdateExtentToWholeExtent();
-    this->TransformedInput2->Update();
-
     // Now make sure we can find scalars
     scalars2=this->GetScalars(this->TransformedInput2,this->ScalarMode,
                              this->ArrayAccessMode,
@@ -508,17 +494,15 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
     // We couldn't find scalars
     if ( !scalars2 )
       {
-      vtkErrorMacro("No scalars found on input.");
+      vtkErrorMacro("No scalars found on input 2.");
       goodSoFar = 0;
       }
     // Even if we found scalars, if they are field data scalars that isn't good
     else if ( this->CellFlag == 2 )
       {
-      vtkErrorMacro("Only point or cell scalar support - found field scalars instead.");
+      vtkErrorMacro("Only point or cell scalar support - found field scalars instead 2nd volume.");
       goodSoFar = 0;
       }
-      
-      
     }
 
   // Make sure the scalar type is actually supported. This mappers supports
@@ -599,15 +583,12 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
     {
     numberOfComponents=scalars->GetNumberOfComponents();
     numberOfComponents2=scalars2->GetNumberOfComponents();
-    if( 
-         !( numberOfComponents==1 ||
+    if( !( numberOfComponents==1 ||
            (numberOfComponents==4 &&
             vol->GetProperty()->GetIndependentComponents()==0))
-        ||
-         !( numberOfComponents2==1 ||
+		|| !( numberOfComponents2==1 ||
            (numberOfComponents2==4 &&
-            vol->GetProperty()->GetIndependentComponents()==0))
-      )
+            vol->GetProperty()->GetIndependentComponents()==0)))
       {
       goodSoFar = 0;
       vtkErrorMacro(<< "Only one component scalars, or four "
@@ -631,7 +612,7 @@ int vtkGPUMultiVolumeRayCastMapper::ValidateRender(vtkRenderer *ren,
     goodSoFar=0;
     vtkErrorMacro("Additive mode only works with 1-component scalars!");
     }
-  
+
   // return our status
   return goodSoFar;
 }
@@ -667,9 +648,7 @@ void vtkGPUMultiVolumeRayCastMapper::CreateCanonicalView(
 
   vtkImageData *bigImage = vtkImageData::New();
   bigImage->SetDimensions(size[0], size[1], 1);
-  bigImage->SetScalarTypeToUnsignedChar();
-  bigImage->SetNumberOfScalarComponents(3);
-  bigImage->AllocateScalars();
+  bigImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 
   this->CanonicalViewImageData = bigImage;
 
@@ -752,7 +731,7 @@ void vtkGPUMultiVolumeRayCastMapper::CreateCanonicalView(
 
   // Shrink to image to the desired size
   vtkImageResample *resample = vtkImageResample::New();
-  resample->SetInput( bigImage );
+  resample->SetInputData( bigImage );
   resample->SetAxisMagnificationFactor(0,scale[0]);
   resample->SetAxisMagnificationFactor(1,scale[1]);
   resample->SetAxisMagnificationFactor(2,1);
@@ -824,14 +803,14 @@ void vtkGPUMultiVolumeRayCastMapper::PrintSelf(ostream& os, vtkIndent indent)
 // NOTE: IT WILL BE MOVED UP TO vtkVolumeMapper after bullet proof usage
 // in this mapper. Other subclasses will use the ClippedCroppingRegionsPlanes
 // members instead of CroppingRegionPlanes.
-// \pre volume_exists: this->GetInput()!=0
+// \pre volume_exists: this->GetInputData()!=0
 // \pre valid_cropping: this->Cropping &&
 //             this->CroppingRegionPlanes[0]<this->CroppingRegionPlanes[1] &&
 //             this->CroppingRegionPlanes[2]<this->CroppingRegionPlanes[3] &&
 //             this->CroppingRegionPlanes[4]<this->CroppingRegionPlanes[5])
 void vtkGPUMultiVolumeRayCastMapper::ClipCroppingRegionPlanes()
 {
-  assert("pre: volume_exists" && this->GetInput(0)!=0);
+  assert("pre: volume_exists" && this->GetInputData(0)!=0);
   assert("pre: valid_cropping" && this->Cropping &&
          this->CroppingRegionPlanes[0]<this->CroppingRegionPlanes[1] &&
          this->CroppingRegionPlanes[2]<this->CroppingRegionPlanes[3] &&
@@ -847,7 +826,7 @@ void vtkGPUMultiVolumeRayCastMapper::ClipCroppingRegionPlanes()
 //    }
 
   double volBounds[6];
-  this->GetInput(0)->GetBounds(volBounds);
+  this->GetInputData(0)->GetBounds(volBounds);
 
   int i=0;
   while(i<6)

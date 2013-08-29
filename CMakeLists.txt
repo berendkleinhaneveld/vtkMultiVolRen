@@ -25,7 +25,7 @@ IF(NOT DEFINED CMAKE_INSTALL_NAME_TOOL)
 ENDIF(NOT DEFINED CMAKE_INSTALL_NAME_TOOL)
 
 # Find VTK
-FIND_PACKAGE(VTK 5.8 REQUIRED)
+FIND_PACKAGE(VTK 6.0 REQUIRED)
 IF(VTK_FOUND)
   INCLUDE(${VTK_USE_FILE})
 ELSE(VTK_FOUND)
@@ -87,18 +87,17 @@ SET(GLSL_SOURCES
 
 # Needs vtkEncodeString, VTK_ENCODESTRING_EXE 
 # should work ...
-# VTK_VOLUMERENDERING_EXPORT is the flag associated to the library, should be adapted
-# MESSAGE("PROJECT_BINARY_DIR=${PROJECT_BINARY_DIR}")
 FOREACH(file ${GLSL_SOURCES})
   ## TODO
-  SET(src  ${PROJECT_SOURCE_DIR}/GLSL/${file}.glsl)
-  SET(res  ${CMAKE_CURRENT_BINARY_DIR}/${file}.cxx)
+  SET(src ${PROJECT_SOURCE_DIR}/GLSL/${file}.glsl)
+  SET(res ${CMAKE_CURRENT_BINARY_DIR}/${file}.cxx)
   SET(resh ${CMAKE_CURRENT_BINARY_DIR}/${file}.h)
   ADD_CUSTOM_COMMAND(
     OUTPUT ${res} ${resh}
     DEPENDS ${src} vtkEncodeString
-    COMMAND ${VTK_ENCODESTRING_EXE}
-    ARGS ${res} ${src} ${file} --build-header VTK_VOLUMERENDERING_EXPORT vtkSystemIncludes.h
+    # COMMAND ${VTK_ENCODESTRING_EXE}
+    COMMAND vtkEncodeString-6.0
+    ARGS ${res} ${src} ${file} --build-header vtkSystemIncludes.h
   )
   SET(KIT_EXTRA_SRCS ${KIT_EXTRA_SRCS} ${res})
 ENDFOREACH(file)
@@ -120,10 +119,12 @@ ENDIF(BUILD_SHARED_LIBS)
 
 # List the kits from VTK that are needed by this project.
 SET(VTK_LOCAL_LIBS
-  vtkIO
-  vtkRendering
-  vtkVolumeRendering
-  vtkWidgets
+  vtkIOCore
+  vtkRenderingCore
+  vtkRenderingVolume
+  vtkRenderingFreeTypeOpenGL
+  vtkRenderingVolumeOpenGL
+  vtkInteractionWidgets
 )
 
 # Hide warnings about using deprecated function calls
@@ -198,7 +199,7 @@ OPTION(WRAP_PYTHON
 IF(WRAP_PYTHON AND VTK_WRAP_PYTHON)
   SET(VTK_WRAP_PYTHON_FIND_LIBS ON)
   INCLUDE(${VTK_CMAKE_DIR}/vtkWrapPython.cmake)
-  INCLUDE_DIRECTORIES("${PYTHON_INCLUDE_PATH}")
+  INCLUDE_DIRECTORIES("${PYTHON_INCLUDE_DIR}")
   VTK_WRAP_PYTHON3(${PROJECT_NAME}Python 
     VTK_LOCAL_PYTHON_SRCS
     "${SOURCES}"
@@ -210,7 +211,7 @@ IF(WRAP_PYTHON AND VTK_WRAP_PYTHON)
     MODULE
     ${PROJECT_NAME}PythonInit.cxx
   )
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME}PythonD 
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME}PythonD
     ${VTK_LOCAL_LIBS}
   	${PROJECT_NAME}
   )

@@ -645,11 +645,11 @@ int main(int argc, char *argv[])
     box->SetPlaceFactor(1.01);
     if ( vol_info[0].reductionFactor < 1.0 )
       {      
-      box->SetInput(resample[0]->GetOutput());
+      box->SetInputData(resample[0]->GetOutput());
       }
     else
       {
-      box->SetInput(input[0]);
+      box->SetInputData(input[0]);
       }
     
     box->SetDefaultRenderer(renderer);
@@ -669,11 +669,11 @@ int main(int argc, char *argv[])
   transform_box->SetPlaceFactor(1.0);
   if ( vol_info[1].reductionFactor < 1.0 )
     {      
-    transform_box->SetInput(resample[1]->GetOutput());
+    transform_box->SetInputData(resample[1]->GetOutput());
     }
   else
     {
-    transform_box->SetInput(input[1]);
+    transform_box->SetInputData(input[1]);
     }
   
   transform_box->SetDefaultRenderer(renderer);
