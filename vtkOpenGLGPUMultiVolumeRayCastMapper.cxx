@@ -9,6 +9,7 @@
 
   Modified by:  Carlos Falcón cfalcon@ctim.es 
                 Karl Krissian karl@ctim.es 
+                Berend Klein Haneveld b.a.kleinhaneveld@student.tudelft.nl
 
      This software is distributed WITHOUT ANY WARRANTY; without even
      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
