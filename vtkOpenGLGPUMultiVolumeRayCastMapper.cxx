@@ -3748,6 +3748,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
     {
     if(spacing[i]<0)
       {
+      spacingSign[i]=-1.0;
       }
     else
       {
@@ -3766,7 +3767,9 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
 	  spacingSign2[i]=-1.0;
 	  }
     else
+	  {
       spacingSign2[i]= 1.0;
+      }
     ++i;
     }
 
@@ -3777,7 +3780,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
   vtkTransform *m2 = vtkTransform::New();
   vtkTransform *m3 = vtkTransform::New();
   if ( tcoordFlag ) //We need the loadedBounds information 
-  {
     {
     m1->PostMultiply();
     m1->Identity();
@@ -3900,10 +3902,12 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
             {
             // loaded bounds take both cell data and point date cases into
             // account
+            if(this->CellFlag) // texcoords between 0 and 1. More complex
               // depends on the loaded texture
               {
               tcoord[j] = spacingSign[j]*(vert[j] - loadedBounds[j*2]) /
                 (loadedBounds[j*2+1] - loadedBounds[j*2]);
+			  tcoord2[j] = spacingSign2[j]*(vert[j] - loadedBounds2[j*2]) /
                   (loadedBounds2[j*2+1] - loadedBounds2[j*2]);
               }
             else // texcoords between 1/2N and 1-1/2N.
@@ -3923,8 +3927,8 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
                 tcoord2[j]=(tmp*(delta-1)+0.5)/delta;
                 
               }
-
             }
+          vtkgl::MultiTexCoord3dv(vtkgl::TEXTURE0, tcoord);
           vtkgl::MultiTexCoord3dv(vtkgl::TEXTURE7, tcoord2);
           }
         glVertex3dv(vert);
@@ -4364,6 +4368,7 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   glBindTexture(GL_TEXTURE_2D,
                 static_cast<GLuint>(
                   this->TextureObjects[
+                    vtkOpenGLGPUVolumeRayCastMapperTextureObjectDepthMap]));
   glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,lowerLeft[0],lowerLeft[1],size[0],
                       size[1]);
 

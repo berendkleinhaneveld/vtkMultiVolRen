@@ -61,6 +61,8 @@ class vtkShader2;
 class vtkTransform;
 
 
+class VTKRENDERINGVOLUMEOPENGL_EXPORT vtkOpenGLGPUMultiVolumeRayCastMapper
+  : public vtkGPUMultiVolumeRayCastMapper
 {
 public:
   static vtkOpenGLGPUMultiVolumeRayCastMapper *New();
@@ -150,6 +152,7 @@ protected:
   int AllocateFrameBuffers(vtkRenderer *ren);
 
   // Description
+  // Load two scalar fields (one or four component scalar field), cell or point
   // based for a given subextent of the whole extent (can be the whole extent)
   // as a 3D texture on the GPU.
   // Extents are expressed in point if the cell flag is false or in cells of
