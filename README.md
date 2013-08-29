@@ -1,4 +1,4 @@
-# VTK Multi Volume Renderer
+# VTK Multi-Volume Renderer
 This code is a modification of existing VTK 6.0 GPU Volume Rendering code to enable the simultaneous rendering of two input datasets.
 A demo is provided as an example.
 
