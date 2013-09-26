@@ -1,4 +1,4 @@
-/*=========================================================================
+/*========================================================================= 
 
   Program:   Visualization Toolkit
   Module:    vtkGPUVolumeRayCastMapper_CompositeFS.glsl
@@ -7,11 +7,11 @@
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
+	 This software is distributed WITHOUT ANY WARRANTY; without even
+	 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+	 PURPOSE.  See the above copyright notice for more information.
 
-=========================================================================*/
+ =========================================================================*/
 
 // Fragment program part with ray cast and composite method.
 
@@ -27,7 +27,18 @@ uniform sampler1D opacityTexture2;
 // to texture coord of second volume
 uniform mat4 P1toP2;
 
-// uniform sampler1D mask2ColorTexture;
+// Properties that can be set from the interface
+uniform int shaderType;
+uniform float lowerBound;
+uniform float upperBound;
+uniform float window;
+uniform float level;
+uniform float brightness;
+// Shader types of the fixed and moving datasets
+uniform int shaderTypeFixed;
+uniform int shaderTypeMoving;
+
+uniform sampler1D mask2ColorTexture;
 
 uniform vec3 lowBounds;
 uniform vec3 highBounds;
@@ -43,6 +54,13 @@ vec3 rayDir;
 
 float tMax;
 
+vec4 fColor;
+float fValue1;
+float fValue2;
+vec4 mColor;
+float mValue1;
+float mValue2;
+
 // from cropping vs no cropping
 vec4 initialColor();
 
@@ -56,79 +74,161 @@ void initShade();
 vec4 shade(vec4 value);
 vec4 shade2(vec4 value);
 
-void trace(void)
-{
-  vec4 destColor=initialColor();
-  float remainOpacity=1.0-destColor.a;
+// Custom shader passes
+void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, inout float currentOpacity);
+void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity);
+void shadeMIDA(int volumeNr, vec4 value, float opacity, inout vec4 accumulatedColor, inout float accumulatedOpacity, inout float currentMax);
 
-  bool inside=true;
-  
-  vec4 color;
-  vec4 opacity;
+void trace(void) {
+	float t = 0.0;
 
-  vec4 color2;
-  vec4 opacity2;
+	initShade();
 
-  initShade();
+	// Create temporary values for each of the
+	// volumes. They can be used to store temporary
+	// values during ray tracing.
+	// fColor = vec4(0.0);
+	fColor = initialColor();
+	fValue1 = 0.0;
+	fValue2 = 0.0;
+	mColor = vec4(0.0);
+	mValue1 = 0.0;
+	mValue2 = 0.0;
 
-  float t=0.0;
-  bool text1=false;
-  bool text2=false;
-  
-  // We NEED two nested while loops. It is trick to work around hardware
-  // limitation about the maximum number of loops.
+	// MIDA:
+	// * accumulatedColor (vec4)	- Color
+	// * accumulatedOpacity (float)	- Value1
+	// * currentMax (float)			- Value2
 
-  while(inside)
-    {  
-    while(inside)
-      {
-      pos2 = vec3(P1toP2*vec4(pos,1));
+	// MIP:
+	// * maxColor (vec4)			- Color
+	// * maxOpacity (float)			- Value1
 
-      //float intensity,af;
-      text1=false;
-      text2=false;
-      //Texture 1
-      vec4 value=texture3D(dataSetTexture,pos);
-      float scalar=scalarFromValue(value);
-      // opacity is the sampled texture value in the 1D opacity texture at
-      // scalarValue
-      opacity=texture1D(opacityTexture,scalar);
+	// DVR:
+	// * currentColor (vec4)		- Color
+	// * currentOpacity (float)		- Value1
 
-      if(opacity.a>0.0)
-        {
-        text1=true;
-        color=shade(value);
-        color=color*opacity.a;
-        destColor=destColor+color*remainOpacity;
-        remainOpacity=remainOpacity*(1.0-opacity.a);
-        }
+	bool inside = true;
+	while (inside) {
+		vec4 valueVector = texture3D(dataSetTexture, pos);
+		float valueScalar = scalarFromValue(valueVector);
+		float opacity = texture1D(opacityTexture, valueScalar).a;
+		pos2 = vec3(P1toP2 * vec4(pos, 1));
 
-    //Texture2 (dataSetTexture2)
-    if (all(greaterThanEqual(pos2,lowBounds2))
-         && all(lessThanEqual(pos2,highBounds2)))
-      {
-        vec4 value2=texture3D(dataSetTexture2,pos2);
-        float scalar2=scalarFromValue(value2);
-        // opacity is the sampled texture value in the 1D opacity texture at
-        // scalarValue
-        opacity2=texture1D(opacityTexture2,scalar2);
-        if(opacity2.a>0.0)
-        {
-          text2=true;
-          color2=shade2(value2);
-          color2=color2*opacity2.a;
-          destColor=destColor+color2*remainOpacity;
-          remainOpacity=remainOpacity*(1.0-opacity2.a);
-        }
-      }
+		// Sample the first dataset
+		if (shaderType == 0) {
+			shadeDVR(0, valueVector, opacity, fColor, fValue1);
+		} else if (shaderType == 1) {
+			shadeMIP(0, valueVector, opacity, fColor, fValue1);
+		} else if (shaderType == 2) {
+			shadeMIDA(0, valueVector, opacity, fColor, fValue1, fValue2);
+		}
 
-      pos=pos+rayDir;
-      t+=1.0;
-      inside=t<tMax && all(greaterThanEqual(pos,lowBounds))
-        && all(lessThanEqual(pos,highBounds))
-        && (remainOpacity>=0.0039); // 1/255=0.0039
-      }
-    }
-  gl_FragColor = destColor;
-  gl_FragColor.a = 1.0-remainOpacity;
+		if (all(greaterThanEqual(pos2, lowBounds2))
+			&& all(lessThanEqual(pos2, highBounds2)))
+		{
+			vec4 valueVector2 = texture3D(dataSetTexture2, pos2);
+			float valueScalar2 = scalarFromValue(valueVector2);
+			float opacity2 = texture1D(opacityTexture2, valueScalar2).a;
+
+			// Sample the second dataset
+			if (shaderTypeMoving == 0) {
+				shadeDVR(1, valueVector2, opacity2, fColor, fValue1);
+			} else if (shaderTypeMoving == 1) {
+				shadeMIP(1, valueVector2, opacity2, mColor, mValue1);
+			} else {
+				shadeMIDA(1, valueVector2, opacity2, mColor, mValue1, mValue2);
+			}
+		}
+
+		pos = pos + rayDir;
+		t += 1.0;
+
+		bool shouldContinue = true;
+		if (shaderTypeFixed == 0 || shaderTypeMoving == 0) {
+			shouldContinue = (1.0 - fValue1) >= 0.0039;
+		}
+
+		inside = t < tMax && all(greaterThanEqual(pos, lowBounds))
+			&& all(lessThanEqual(pos, highBounds))
+			&& shouldContinue;
+	}
+
+	vec4 color1 = fColor;
+	color1.a = fValue1;
+	vec4 color2 = mColor;
+	color2.a = mValue1;
+	
+	// Blend the colors together based on render types
+	// TODO: define sane function for combining the two color values
+	gl_FragColor = color1 + color2;
+}
+
+/**
+ * value: value from texture
+ * opacity: opacity from texture
+ * inout remainOpacity: remaining opacity in the destination color
+ * inout destColor: color that this shader pass adds to
+ */
+void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, inout float currentOpacity) {
+	vec4 color = vec4(0.0);
+	if (opacity > 0.0)
+	{
+		if (volumeNr == 0) {
+			color = shade(value);
+		} else {
+			color = shade2(value);
+		}
+		float remainOpacity = 1.0 - currentOpacity;
+		color = color * opacity;
+		destColor = destColor + color * remainOpacity;
+		remainOpacity = remainOpacity * (1.0 - opacity);
+		currentOpacity = 1.0 - remainOpacity;
+	}
+}
+
+/**
+ * value: value from texture
+ * opacity: opacity from texture
+ * inout maxColor: maximum color at any time
+ * inout maxOpacity: opacity that goes together with the maximum color
+ */
+void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity) {
+	float valueScalar = scalarFromValue(value);
+	if (valueScalar > maxColor.r)
+	{
+		maxColor = vec4(valueScalar);
+		maxOpacity = opacity;
+	}
+}
+
+/**
+ * value: value from texture
+ * opacity: opacity from texture
+ * inout accumulatedColor: maximum color at any time
+ * inout accumulatedOpacity: opacity that goes together with the maximum color
+ * inout currentMax:
+ */
+void shadeMIDA(int volumeNr, vec4 value, float opacity, inout vec4 accumulatedColor, inout float accumulatedOpacity, inout float currentMax) {
+	float valueScalar = scalarFromValue(value);
+	if (valueScalar > currentMax)
+	{
+		// Get the color
+		float color;
+		if (volumeNr == 0) {
+			color = shade(value).r;
+		} else {
+			color = shade2(value).r;
+		}
+		// Calculate a difference measure
+		float difference = valueScalar - currentMax;
+		float factor = 1.0 - difference;
+
+		// Update the accumulated values
+		accumulatedColor = accumulatedColor * factor + (1.0 - accumulatedOpacity * factor) * opacity * color;
+		accumulatedOpacity = accumulatedOpacity * factor + (1.0 - accumulatedOpacity * factor) * opacity;
+
+		// Update the current maximum value
+		currentMax = valueScalar;
+	}
 }
