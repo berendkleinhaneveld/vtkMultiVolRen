@@ -1858,6 +1858,7 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::vtkOpenGLGPUMultiVolumeRayCastMapper()
   this->OpenGLObjectsCreated=0;
   this->LoadExtensionsSucceeded=0;
   this->NumberOfFrameBuffers=0;
+  this->ShaderType=SHADER_TYPE_DEFAULT;
 
   // up to 2 frame buffer 2D textures (left/right)
   // 1 dataset 3D texture
@@ -4515,6 +4516,8 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   int ivalue=0;
   v->SetUniformi("dataSetTexture",1,&ivalue);
 
+  int shaderTypeValue=this->ShaderType;
+  v->SetUniformi("shaderType", 1, &shaderTypeValue);
   if(this->MaskInput!=0 || this->GetNumberOfInputConnections(1)>0)
     {
     // Make the mask texture available on texture unit 7

@@ -60,6 +60,10 @@ class vtkShader2;
 
 class vtkTransform;
 
+typedef enum SHADER_TYPE {
+  SHADER_TYPE_DEFAULT=0,
+  SHADER_TYPE_MIP=1
+} SHADER_TYPE;
 
 class VTKRENDERINGVOLUMEOPENGL_EXPORT vtkOpenGLGPUMultiVolumeRayCastMapper
   : public vtkGPUMultiVolumeRayCastMapper
@@ -93,6 +97,12 @@ public:
   // \pre headerMessage_exists: headerMessage!=0
   static void PrintError(const char *headerMessage);
 
+  // Description:
+  // Change from MIP to MIDA to Simple mix rendering
+  int ShaderType;
+  vtkSetMacro(ShaderType, int);
+  vtkGetMacro(ShaderType, int);
+  
 protected:
   vtkOpenGLGPUMultiVolumeRayCastMapper();
   ~vtkOpenGLGPUMultiVolumeRayCastMapper();
