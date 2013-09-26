@@ -60,11 +60,13 @@ INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 SET(HEADERS 
   vtkGPUMultiVolumeRayCastMapper.h
   vtkOpenGLGPUMultiVolumeRayCastMapper.h
+  vtkOpenGLGPUVolumeRayCastMapper2.h
 )
 
 SET(SOURCES 
   vtkGPUMultiVolumeRayCastMapper.cxx
   vtkOpenGLGPUMultiVolumeRayCastMapper.cxx
+  vtkOpenGLGPUVolumeRayCastMapper2.cxx
 )
 
 SET(ALL_SOURCES
@@ -78,6 +80,11 @@ SET(GLSL_SOURCES
   vtkGPUMultiVolumeRayCastMapper_FourComponentsFS
   vtkGPUMultiVolumeRayCastMapper_NoShadeFS
   vtkGPUMultiVolumeRayCastMapper_ShadeFS
+  vtkGPUVolumeRayCastMapper2_CompositeFS
+  vtkGPUVolumeRayCastMapper2_OneComponentFS
+  vtkGPUVolumeRayCastMapper2_FourComponentsFS
+  vtkGPUVolumeRayCastMapper2_NoShadeFS
+  vtkGPUVolumeRayCastMapper2_ShadeFS
 )
 
 # -----------------------------------------------------------------------------
