@@ -1851,6 +1851,8 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::vtkOpenGLGPUMultiVolumeRayCastMapper()
   this->LoadExtensionsSucceeded=0;
   this->NumberOfFrameBuffers=0;
   this->ShaderType=SHADER_TYPE_DEFAULT;
+  this->ShaderTypeFixed=0;
+  this->ShaderTypeMoving=0;
 
   // up to 2 frame buffer 2D textures (left/right)
   // 1 dataset 3D texture
@@ -2079,6 +2081,9 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::~vtkOpenGLGPUMultiVolumeRayCastMapper()
     }
   this->TextureCoord_1to2->UnRegister(this);
   this->TextureCoord_1to2=0;
+  this->ShaderType=0;
+  this->ShaderTypeFixed=0;
+  this->ShaderTypeMoving=0;
 }
 
 //-----------------------------------------------------------------------------
@@ -4493,9 +4498,19 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   float fvalue[2];
   int ivalue=0;
   v->SetUniformi("dataSetTexture",1,&ivalue);
-
+  
   int shaderTypeValue=this->ShaderType;
+  int shaderTypeFixed=this->ShaderTypeFixed;
+  int shaderTypeMoving=this->ShaderTypeMoving;
   v->SetUniformi("shaderType", 1, &shaderTypeValue);
+  v->SetUniformi("shaderTypeFixed", 1, &shaderTypeFixed);
+  v->SetUniformi("shaderTypeMoving", 1, &shaderTypeMoving);
+  float minValue=0.3;
+  float maxValue=0.9;
+  v->SetUniformf("minValue", 1, &minValue);
+  v->SetUniformf("maxValue", 1, &maxValue);
+  
+
   if(this->MaskInput!=0 || this->GetNumberOfInputConnections(1)>0)
     {
     // Make the mask texture available on texture unit 7
@@ -6304,6 +6319,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
 
     
     this->Program->SendUniforms();
+
   int abort=this->RenderClippedBoundingBox(1,0,1,ren->GetRenderWindow());
   if (!abort)
     {

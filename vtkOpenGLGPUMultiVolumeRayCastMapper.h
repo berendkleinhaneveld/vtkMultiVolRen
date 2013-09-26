@@ -102,6 +102,18 @@ public:
   int ShaderType;
   vtkSetMacro(ShaderType, int);
   vtkGetMacro(ShaderType, int);
+
+  // Description:
+  // Change shader type of fixed data set
+  int ShaderTypeFixed;
+  vtkSetMacro(ShaderTypeFixed, int);
+  vtkGetMacro(ShaderTypeFixed, int);
+
+  // Description:
+  // Change shader type of moving data set
+  int ShaderTypeMoving;
+  vtkSetMacro(ShaderTypeMoving, int);
+  vtkGetMacro(ShaderTypeMoving, int);
   
 protected:
   vtkOpenGLGPUMultiVolumeRayCastMapper();
