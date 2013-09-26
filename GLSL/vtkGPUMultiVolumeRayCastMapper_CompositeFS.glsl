@@ -116,11 +116,11 @@ void trace(void) {
 		pos2 = vec3(P1toP2 * vec4(pos, 1));
 
 		// Sample the first dataset
-		if (shaderType == 0) {
+		if (shaderTypeFixed == 0) {
 			shadeDVR(0, valueVector, opacity, fColor, fValue1);
-		} else if (shaderType == 1) {
+		} else if (shaderTypeFixed == 1) {
 			shadeMIP(0, valueVector, opacity, fColor, fValue1);
-		} else if (shaderType == 2) {
+		} else if (shaderTypeFixed == 2) {
 			shadeMIDA(0, valueVector, opacity, fColor, fValue1, fValue2);
 		}
 
