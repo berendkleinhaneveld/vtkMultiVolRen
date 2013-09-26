@@ -93,9 +93,6 @@
 #include "vtkShader2Collection.h"
 #include "vtkOpenGLRenderWindow.h"
 
-// Uncomment the following line to debug Snow Leopard
-//#define APPLE_SNOW_LEOPARD_BUG
-
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
@@ -1508,11 +1505,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::CheckFrameBufferStatus()
     default:
       cout << "Unknown framebuffer status=0x" << hex<< status << dec << endl;
     }
-  // DO NOT REMOVE THE FOLLOWING COMMENTED LINE. FOR DEBUGGING PURPOSE.
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  this->DisplayFrameBufferAttachments();
-  this->DisplayReadAndDrawBuffers();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2173,16 +2165,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::LoadExtensions(
   // report something meaningful back
   this->UnsupportedRequiredExtensions =
     new vtkUnsupportedRequiredExtensionsStringStream;
-
-  // It does not work on Apple OS X Snow Leopard with nVidia.
-  // There is a bug in the OpenGL driver with an error in the
-  // Cg compiler about an infinite loop.
-#ifdef APPLE_SNOW_LEOPARD_BUG
- #ifdef __APPLE__
-  this->LoadExtensionsSucceeded=0;
-  return;
- #endif
-#endif
 
   // Assume success
   this->LoadExtensionsSucceeded=1;
@@ -4486,10 +4468,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
                      parallelProjection,rayCastMethod,shadeMethod,
                      componentMethod);
 
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  this->Program->Build();
-#endif
-
   vtkUniformVariables *v=this->Program->GetUniformVariables();
 
   // for active texture 0, dataset
@@ -4576,18 +4554,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
 
   this->CheckFrameBufferStatus();
 
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  this->Program->SendUniforms();
-  cout << "BEFORE isValid0"  << endl;
-  if(!this->Program->IsValid())
-    {
-    cout <<this->Program->GetLastValidateLog() << endl;
-    this->Program->PrintActiveUniformVariablesOnCout();
-    v->Print(cout);
-    }
-  cout << "AFTER isValid0"  << endl;
-#endif
-
   if(this->NumberOfCroppingRegions>1)
     {
     // framebuffer texture
@@ -4603,18 +4569,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
       }
     this->CheckFrameBufferStatus();
 
-#ifdef APPLE_SNOW_LEOPARD_BUG
-    this->Program->SendUniforms();
-    cout << "BEFORE isValid1"  << endl;
-    if(!this->Program->IsValid())
-      {
-      cout <<this->Program->GetLastValidateLog() << endl;
-      this->Program->PrintActiveUniformVariablesOnCout();
-      v->Print(cout);
-      }
-    cout << "AFTER isValid1"  << endl;
-#endif
-
     // max scalar value framebuffer texture
     if(this->BlendMode==vtkVolumeMapper::MAXIMUM_INTENSITY_BLEND
        || this->BlendMode==vtkGPUMultiVolumeRayCastMapper::MINIMUM_INTENSITY_BLEND
@@ -4629,19 +4583,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
     }
 
   this->CheckFrameBufferStatus();
-
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  this->Program->SendUniforms();
-  cout << "BEFORE isValid2"  << endl;
-  if(!this->Program->IsValid())
-    {
-    cout <<this->Program->GetLastValidateLog() << endl;
-    this->Program->PrintActiveUniformVariablesOnCout();
-    v->Print(cout);
-    }
-  cout << "AFTER isValid2"  << endl;
-#endif
-
 
   fvalue[0]=static_cast<float>(lowerLeft[0]);
   fvalue[1]=static_cast<float>(lowerLeft[1]);
@@ -6363,14 +6304,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
 
     
     this->Program->SendUniforms();
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  if(!this->Program->IsValid())
-    {
-    cout << "line " << __LINE__ << " " <<
-      this->Program->GetLastValidateLog() << endl;
-    }
-  this->Program->PrintActiveUniformVariablesOnCout();
-#endif
   int abort=this->RenderClippedBoundingBox(1,0,1,ren->GetRenderWindow());
   if (!abort)
     {
