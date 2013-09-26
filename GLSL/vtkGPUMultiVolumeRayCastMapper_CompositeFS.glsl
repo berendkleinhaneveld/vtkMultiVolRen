@@ -132,8 +132,10 @@ void trace(void) {
 			float opacity2 = texture1D(opacityTexture2, valueScalar2).a;
 
 			// Sample the second dataset
-			if (shaderTypeMoving == 0) {
+			if (shaderTypeMoving == 0 && shaderTypeFixed == 0) {
 				shadeDVR(1, valueVector2, opacity2, fColor, fValue1);
+			} else if (shaderTypeMoving == 0) {
+				shadeDVR(1, valueVector2, opacity2, mColor, mValue1);
 			} else if (shaderTypeMoving == 1) {
 				shadeMIP(1, valueVector2, opacity2, mColor, mValue1);
 			} else {
@@ -145,8 +147,10 @@ void trace(void) {
 		t += 1.0;
 
 		bool shouldContinue = true;
-		if (shaderTypeFixed == 0 || shaderTypeMoving == 0) {
+		if (shaderTypeFixed == 0 && shaderTypeMoving == 0) {
 			shouldContinue = (1.0 - fValue1) >= 0.0039;
+		} else if (shaderTypeFixed != 0 && shaderTypeMoving == 0) {
+			shouldContinue = (1.0 - mValue1) >= 0.0039;
 		}
 
 		inside = t < tMax && all(greaterThanEqual(pos, lowBounds))
