@@ -28,21 +28,24 @@ uniform sampler1D opacityTexture2;
 uniform mat4 P1toP2;
 
 // Properties that can be set from the interface
-uniform int shaderType;
-uniform float lowerBound;
-uniform float upperBound;
-uniform float window;
-uniform float level;
-uniform float brightness;
+uniform int shaderType;  // Should become blend type or something similar
+uniform float lowerBound1;  // Should become lowerBound1/2
+uniform float lowerBound2;  // Should become lowerBound1/2
+uniform float upperBound1;  // Should become upperBound1/2
+uniform float upperBound2;  // Should become upperBound1/2
+uniform float brightness1;  // Should become brightness1/2
+uniform float brightness2;  // Should become brightness1/2
 // Shader types of the fixed and moving datasets
-uniform int shaderTypeFixed;
-uniform int shaderTypeMoving;
+uniform int shaderType1;
+uniform int shaderType2;
 
 uniform sampler1D mask2ColorTexture;
 
+// Bounds from the fixed dataset
 uniform vec3 lowBounds;
 uniform vec3 highBounds;
 
+// Bounds from the moving dataset
 uniform vec3 lowBounds2;
 uniform vec3 highBounds2;
 
@@ -91,7 +94,7 @@ void trace(void) {
 	fColor = initialColor();
 	fValue1 = 0.0;
 	fValue2 = 0.0;
-	mColor = vec4(0.0);
+	mColor = initialColor();
 	mValue1 = 0.0;
 	mValue2 = 0.0;
 
@@ -116,11 +119,11 @@ void trace(void) {
 		pos2 = vec3(P1toP2 * vec4(pos, 1));
 
 		// Sample the first dataset
-		if (shaderTypeFixed == 0) {
+		if (shaderType1 == 0) {
 			shadeDVR(0, valueVector, opacity, fColor, fValue1);
-		} else if (shaderTypeFixed == 1) {
+		} else if (shaderType1 == 1) {
 			shadeMIP(0, valueVector, opacity, fColor, fValue1);
-		} else if (shaderTypeFixed == 2) {
+		} else if (shaderType1 == 2) {
 			shadeMIDA(0, valueVector, opacity, fColor, fValue1, fValue2);
 		}
 
@@ -132,11 +135,11 @@ void trace(void) {
 			float opacity2 = texture1D(opacityTexture2, valueScalar2).a;
 
 			// Sample the second dataset
-			if (shaderTypeMoving == 0 && shaderTypeFixed == 0) {
+			if (shaderType2 == 0 && shaderType1 == 0) {
 				shadeDVR(1, valueVector2, opacity2, fColor, fValue1);
-			} else if (shaderTypeMoving == 0) {
+			} else if (shaderType2 == 0) {
 				shadeDVR(1, valueVector2, opacity2, mColor, mValue1);
-			} else if (shaderTypeMoving == 1) {
+			} else if (shaderType2 == 1) {
 				shadeMIP(1, valueVector2, opacity2, mColor, mValue1);
 			} else {
 				shadeMIDA(1, valueVector2, opacity2, mColor, mValue1, mValue2);
@@ -147,9 +150,9 @@ void trace(void) {
 		t += 1.0;
 
 		bool shouldContinue = true;
-		if (shaderTypeFixed == 0 && shaderTypeMoving == 0) {
+		if (shaderType1 == 0 && shaderType2 == 0) {
 			shouldContinue = (1.0 - fValue1) >= 0.0039;
-		} else if (shaderTypeFixed != 0 && shaderTypeMoving == 0) {
+		} else if (shaderType1 != 0 && shaderType2 == 0) {
 			shouldContinue = (1.0 - mValue1) >= 0.0039;
 		}
 
@@ -199,7 +202,19 @@ void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, ino
  */
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity) {
 	float valueScalar = scalarFromValue(value);
-	if (valueScalar > maxColor.r)
+	float shadedValue;
+	float lowerBound;
+	float upperBound;
+	if (volumeNr == 0) {
+		shadedValue = shade(value).r;
+		lowerBound = lowerBound1;
+		upperBound = upperBound1;
+	} else {
+		shadedValue = shade2(value).r;
+		lowerBound = lowerBound2;
+		upperBound = upperBound2;
+	}
+	if (shadedValue > maxColor.r/* && shadedValue >= lowerBound && shadedValue <= upperBound*/)
 	{
 		maxColor = vec4(valueScalar);
 		maxOpacity = opacity;

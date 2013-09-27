@@ -106,14 +106,6 @@ public:
   vtkSetMacro(LowerBound, float);
   vtkGetMacro(LowerBound, float);
 
-  float Window;
-  vtkSetMacro(Window, float);
-  vtkGetMacro(Window, float);
-
-  float Level;
-  vtkSetMacro(Level, float);
-  vtkGetMacro(Level, float);
-
   float Brightness;
   vtkSetMacro(Brightness, float);
   vtkGetMacro(Brightness, float);

@@ -1827,8 +1827,6 @@ vtkOpenGLGPUVolumeRayCastMapper2::vtkOpenGLGPUVolumeRayCastMapper2()
   this->ShaderType=SHADER_TYPE_DEFAULT;
   this->LowerBound=0.0f;
   this->UpperBound=1.0f;
-  this->Window=1.0f;
-  this->Level=0.5f;
   this->Brightness=1.0f;
 
   // up to 2 frame buffer 2D textures (left/right)
@@ -2052,8 +2050,6 @@ vtkOpenGLGPUVolumeRayCastMapper2::~vtkOpenGLGPUVolumeRayCastMapper2()
     this->ScaleBiasProgram->Delete();
     }
   
-  this->Window=1.0f;
-  this->Level=0.5f;
   this->ShaderType=0;
   this->UpperBound=1.0f;
   this->LowerBound=0.0f;
@@ -4263,10 +4259,6 @@ void vtkOpenGLGPUVolumeRayCastMapper2::PreRender(vtkRenderer *ren,
   v->SetUniformf("lowerBound", 1, &minValue);
   float maxValue=this->UpperBound;
   v->SetUniformf("upperBound", 1, &maxValue);
-  float window=this->Window;
-  v->SetUniformf("window", 1, &window);
-  float level=this->Level;
-  v->SetUniformf("level", 1, &level);
   float brightness=this->Brightness;
   v->SetUniformf("brightness", 1, &brightness);
 

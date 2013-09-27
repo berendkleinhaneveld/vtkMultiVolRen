@@ -105,15 +105,27 @@ public:
 
   // Description:
   // Change shader type of fixed data set
-  int ShaderTypeFixed;
-  vtkSetMacro(ShaderTypeFixed, int);
-  vtkGetMacro(ShaderTypeFixed, int);
+  int ShaderType1;
+  vtkSetMacro(ShaderType1, int);
+  vtkGetMacro(ShaderType1, int);
 
   // Description:
   // Change shader type of moving data set
-  int ShaderTypeMoving;
-  vtkSetMacro(ShaderTypeMoving, int);
-  vtkGetMacro(ShaderTypeMoving, int);
+  int ShaderType2;
+  vtkSetMacro(ShaderType2, int);
+  vtkGetMacro(ShaderType2, int);
+
+  // Description:
+  // Change brightness parameter of fixed data set
+  float Brightness1;
+  vtkSetMacro(Brightness1, float);
+  vtkGetMacro(Brightness1, float);
+
+  // Description:
+  // Change brightness parameter of fixed data set
+  float Brightness2;
+  vtkSetMacro(Brightness2, float);
+  vtkGetMacro(Brightness2, float);
   
 protected:
   vtkOpenGLGPUMultiVolumeRayCastMapper();

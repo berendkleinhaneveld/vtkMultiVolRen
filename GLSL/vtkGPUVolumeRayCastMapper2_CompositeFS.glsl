@@ -24,10 +24,9 @@ uniform sampler1D opacityTexture;
 uniform int shaderType;
 uniform float lowerBound;
 uniform float upperBound;
-uniform float window;
-uniform float level;
 uniform float brightness;
 
+// Bounds from the dataset
 uniform vec3 lowBounds;
 uniform vec3 highBounds;
 
@@ -115,6 +114,10 @@ void trace(void) {
 			&& shouldContinue;
 	}
 	
+	if (shaderType == 2) {
+		fColor = fColor * brightness;
+	}
+
 	gl_FragColor = fColor;
 	gl_FragColor.a = fValue1;
 }
@@ -146,11 +149,13 @@ void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, ino
  */
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity) {
 	float valueScalar = scalarFromValue(value);
-	if (valueScalar > maxColor.r)
+	float shadedValue = shade(value).r;
+	if (shadedValue > maxColor.r && shadedValue >= lowerBound && shadedValue <= upperBound)
 	{
-		maxColor = vec4(valueScalar);
+		maxColor = vec4(shadedValue);
 		maxOpacity = opacity;
 	}
+	maxOpacity = 1.0;
 }
 
 /**
