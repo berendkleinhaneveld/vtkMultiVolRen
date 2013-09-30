@@ -162,8 +162,14 @@ void trace(void) {
 	}
 
 	vec4 color1 = fColor;
+	if (shaderType1 == 2) {
+		color1 = fColor * brightness1;
+	}
 	color1.a = fValue1;
 	vec4 color2 = mColor;
+	if (shaderType2 == 2) {
+		color2 = fColor * brightness2;
+	}
 	color2.a = mValue1;
 	
 	// Blend the colors together based on render types
@@ -214,7 +220,7 @@ void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inou
 		lowerBound = lowerBound2;
 		upperBound = upperBound2;
 	}
-	if (shadedValue > maxColor.r/* && shadedValue >= lowerBound && shadedValue <= upperBound*/)
+	if (shadedValue > maxColor.r && shadedValue >= lowerBound && shadedValue <= upperBound)
 	{
 		maxColor = vec4(valueScalar);
 		maxOpacity = opacity;
