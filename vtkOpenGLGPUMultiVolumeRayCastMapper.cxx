@@ -1855,6 +1855,10 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::vtkOpenGLGPUMultiVolumeRayCastMapper()
   this->ShaderType2=0;
   this->Brightness1=1.0f;
   this->Brightness2=1.0f;
+  this->LowerBound1=0.0f;
+  this->LowerBound2=0.0f;
+  this->UpperBound1=1.0f;
+  this->UpperBound2=1.0f;
 
   // up to 2 frame buffer 2D textures (left/right)
   // 1 dataset 3D texture
@@ -2088,6 +2092,10 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::~vtkOpenGLGPUMultiVolumeRayCastMapper()
   this->ShaderType2=0;
   this->Brightness1=1.0f;
   this->Brightness2=1.0f;
+  this->LowerBound1=0.0f;
+  this->LowerBound2=0.0f;
+  this->UpperBound1=1.0f;
+  this->UpperBound2=1.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -4500,11 +4508,19 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   int shaderType2=this->ShaderType2;
   float brightness1=this->Brightness1;
   float brightness2=this->Brightness2;
+  float lowerBound1=this->LowerBound1;
+  float lowerBound2=this->LowerBound2;
+  float upperBound1=this->UpperBound1;
+  float upperBound2=this->UpperBound2;
   v->SetUniformi("shaderType", 1, &shaderTypeValue);
   v->SetUniformi("shaderType1", 1, &shaderType1);
   v->SetUniformi("shaderType2", 1, &shaderType2);
   v->SetUniformf("brightness1", 1, &brightness1);
   v->SetUniformf("brightness2", 1, &brightness2);
+  v->SetUniformf("lowerBound1", 1, &lowerBound1);
+  v->SetUniformf("lowerBound2", 1, &lowerBound2);
+  v->SetUniformf("upperBound1", 1, &upperBound1);
+  v->SetUniformf("upperBound2", 1, &upperBound2);
 
   if(this->MaskInput!=0 || this->GetNumberOfInputConnections(1)>0)
     {

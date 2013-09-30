@@ -115,6 +115,22 @@ public:
   vtkSetMacro(ShaderType2, int);
   vtkGetMacro(ShaderType2, int);
 
+  float UpperBound1;
+  vtkSetMacro(UpperBound1, float);
+  vtkGetMacro(UpperBound1, float);
+
+  float LowerBound1;
+  vtkSetMacro(LowerBound1, float);
+  vtkGetMacro(LowerBound1, float);
+
+  float UpperBound2;
+  vtkSetMacro(UpperBound2, float);
+  vtkGetMacro(UpperBound2, float);
+
+  float LowerBound2;
+  vtkSetMacro(LowerBound2, float);
+  vtkGetMacro(LowerBound2, float);
+
   // Description:
   // Change brightness parameter of fixed data set
   float Brightness1;
