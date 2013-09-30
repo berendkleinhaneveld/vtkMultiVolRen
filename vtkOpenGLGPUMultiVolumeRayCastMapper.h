@@ -60,11 +60,6 @@ class vtkShader2;
 
 class vtkTransform;
 
-typedef enum SHADER_TYPE {
-  SHADER_TYPE_DEFAULT=0,
-  SHADER_TYPE_MIP=1
-} SHADER_TYPE;
-
 class VTKRENDERINGVOLUMEOPENGL_EXPORT vtkOpenGLGPUMultiVolumeRayCastMapper
   : public vtkGPUMultiVolumeRayCastMapper
 {
@@ -99,9 +94,9 @@ public:
 
   // Description:
   // Change from MIP to MIDA to Simple mix rendering
-  int ShaderType;
-  vtkSetMacro(ShaderType, int);
-  vtkGetMacro(ShaderType, int);
+  int BlendType;
+  vtkSetMacro(BlendType, int);
+  vtkGetMacro(BlendType, int);
 
   // Description:
   // Change shader type of fixed data set

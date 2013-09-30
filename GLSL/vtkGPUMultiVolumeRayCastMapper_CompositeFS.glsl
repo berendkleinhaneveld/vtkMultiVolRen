@@ -28,13 +28,13 @@ uniform sampler1D opacityTexture2;
 uniform mat4 P1toP2;
 
 // Properties that can be set from the interface
-uniform int shaderType;  // Should become blend type or something similar
-uniform float lowerBound1;  // Should become lowerBound1/2
-uniform float lowerBound2;  // Should become lowerBound1/2
-uniform float upperBound1;  // Should become upperBound1/2
-uniform float upperBound2;  // Should become upperBound1/2
-uniform float brightness1;  // Should become brightness1/2
-uniform float brightness2;  // Should become brightness1/2
+uniform int blendType;
+uniform float lowerBound1;
+uniform float lowerBound2;
+uniform float upperBound1;
+uniform float upperBound2;
+uniform float brightness1;
+uniform float brightness2;
 // Shader types of the fixed and moving datasets
 uniform int shaderType1;
 uniform int shaderType2;
@@ -90,7 +90,6 @@ void trace(void) {
 	// Create temporary values for each of the
 	// volumes. They can be used to store temporary
 	// values during ray tracing.
-	// fColor = vec4(0.0);
 	fColor = initialColor();
 	fValue1 = 0.0;
 	fValue2 = 0.0;

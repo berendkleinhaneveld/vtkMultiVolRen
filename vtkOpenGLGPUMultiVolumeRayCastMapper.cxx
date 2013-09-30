@@ -1850,7 +1850,7 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::vtkOpenGLGPUMultiVolumeRayCastMapper()
   this->OpenGLObjectsCreated=0;
   this->LoadExtensionsSucceeded=0;
   this->NumberOfFrameBuffers=0;
-  this->ShaderType=SHADER_TYPE_DEFAULT;
+  this->BlendType=0;
   this->ShaderType1=0;
   this->ShaderType2=0;
   this->Brightness1=1.0f;
@@ -2087,7 +2087,7 @@ vtkOpenGLGPUMultiVolumeRayCastMapper::~vtkOpenGLGPUMultiVolumeRayCastMapper()
     }
   this->TextureCoord_1to2->UnRegister(this);
   this->TextureCoord_1to2=0;
-  this->ShaderType=0;
+  this->BlendType=0;
   this->ShaderType1=0;
   this->ShaderType2=0;
   this->Brightness1=1.0f;
@@ -4503,7 +4503,7 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   int ivalue=0;
   v->SetUniformi("dataSetTexture",1,&ivalue);
   
-  int shaderTypeValue=this->ShaderType;
+  int blendType=this->BlendType;
   int shaderType1=this->ShaderType1;
   int shaderType2=this->ShaderType2;
   float brightness1=this->Brightness1;
@@ -4512,7 +4512,7 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   float lowerBound2=this->LowerBound2;
   float upperBound1=this->UpperBound1;
   float upperBound2=this->UpperBound2;
-  v->SetUniformi("shaderType", 1, &shaderTypeValue);
+  v->SetUniformi("blendType", 1, &blendType);
   v->SetUniformi("shaderType1", 1, &shaderType1);
   v->SetUniformi("shaderType2", 1, &shaderType2);
   v->SetUniformf("brightness1", 1, &brightness1);
