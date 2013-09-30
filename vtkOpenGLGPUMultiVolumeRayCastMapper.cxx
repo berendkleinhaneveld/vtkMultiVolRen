@@ -2774,7 +2774,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::CreateOpenGLObjects(vtkRenderer *ren)
 
   // Restore default frame buffer.
   vtkgl::BindFramebufferEXT(vtkgl::FRAMEBUFFER_EXT,savedFrameBuffer);
-
 }
 
 
@@ -3225,7 +3224,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::LoadScalarField(vtkImageData *input,
   vtkstd::map<vtkImageData *,vtkKWScalarField *>::iterator it=
     this->ScalarsTextures->Map.find(input);
 
-
   vtkKWScalarField *texture;
   if(it==this->ScalarsTextures->Map.end())
     {
@@ -3243,8 +3241,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::LoadScalarField(vtkImageData *input,
                   this->ArrayAccessMode,
                   this->ArrayId,
                   this->ArrayName,
-                  volume->GetProperty()->GetInterpolationType()
-                  ==VTK_LINEAR_INTERPOLATION,
+                  volume->GetProperty()->GetInterpolationType()==VTK_LINEAR_INTERPOLATION,
                   this->TableRange,
                   static_cast<int>(static_cast<float>(this->MaxMemoryInBytes)*this->MaxMemoryFraction));
 
@@ -3275,12 +3272,11 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::LoadScalarField(vtkImageData *input,
                     this->ArrayAccessMode,
                     this->ArrayId,
                     this->ArrayName,
-                    this->GetProperty2()->GetInterpolationType()
-                    ==VTK_LINEAR_INTERPOLATION,
+                     this->GetProperty2()->GetInterpolationType()==VTK_LINEAR_INTERPOLATION,
                     this->TableRange,
                     static_cast<int>(static_cast<float>(this->MaxMemoryInBytes)*this->MaxMemoryFraction));
 
-    result=result && texture2->IsLoaded();
+    result=(result && texture2->IsLoaded());
     this->CurrentScalar2=texture2;
     vtkgl::ActiveTexture(vtkgl::TEXTURE0);
   }
@@ -3324,6 +3320,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::UpdateColorTransferFunction(
     this->RGBTable2->Update(
     colorTransferFunction2,this->TableRange,
     volumeProperty2->GetInterpolationType()==VTK_LINEAR_INTERPOLATION);
+    
     // Restore default
     vtkgl::ActiveTexture( vtkgl::TEXTURE0);
     }
@@ -3602,7 +3599,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::ClipBoundingBox(vtkRenderer *ren,
     camFarPoint[2] /= camFarPoint[3];
     }
 
-
   if(this->NearPlane==0)
     {
     this->NearPlane= vtkPlane::New();
@@ -3624,8 +3620,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::ClipBoundingBox(vtkRenderer *ren,
   camNearPoint[0]+=camPlaneNormal[0]*offset;
   camNearPoint[1]+=camPlaneNormal[1]*offset;
   camNearPoint[2]+=camPlaneNormal[2]*offset;
-
-
 
   this->NearPlane->SetOrigin( camNearPoint );
   this->NearPlane->SetNormal( camPlaneNormal );
@@ -3764,7 +3758,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderClippedBoundingBox(
       }
     ++i;
     }
-
 
   // Premultiply is the default for vtkTransform
   vtkTransform *m = vtkTransform::New();
@@ -4275,7 +4268,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::PreRender(vtkRenderer *ren,
   // of the transfer functions
   this->TableRange[0]=scalarRange[0];
   this->TableRange[1]=scalarRange[1];
-
 
   if(this->RGBTable==0)
     {
@@ -4980,15 +4972,6 @@ double vtkOpenGLGPUMultiVolumeRayCastMapper::ComputeMinimalSampleDistancePerPixe
 
   eyeToDataset->Delete();
 
-  if(this->IgnoreSampleDistancePerPixel)
-    {
-      //    cout<<"ignore SampleDistancePerPixel"<<endl;
-    }
-  else
-    {
-      //cout<<"SampleDistancePerPixel="<<result<<endl;
-    }
-
   return result;
 }
 
@@ -5407,7 +5390,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::RenderRegions(vtkRenderer *ren,
     abort=this->RenderSubVolume(ren,bounds[regions[i].Id],vol);
     ++i;
     }
-
 }
 
 //-----------------------------------------------------------------------------
@@ -5653,13 +5635,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     this->CurrentScalar2=texture2;
     vtkgl::ActiveTexture(vtkgl::TEXTURE7);
     this->CurrentScalar2->Bind();    
-
-//     vtkgl::ActiveTexture(vtkgl::TEXTURE7);
-//     this->CurrentMask=mask;
-//     if(this->CurrentMask!=0)
-//       {
-//       this->CurrentMask->Bind();
-//       }
     }
 
   if(!loaded)
@@ -6058,19 +6033,13 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
             j=0;
             while(j<3)
               {
-              double delta=
-                static_cast<double>(loadedExtent[j*2+1]-loadedExtent[j*2]);
+              double delta=static_cast<double>(loadedExtent[j*2+1]-loadedExtent[j*2]);
               lowBounds[j]=static_cast<float>((blocks[k].Extent[j*2]-static_cast<double>(loadedExtent[j*2]))/delta);
               highBounds[j]=static_cast<float>((blocks[k].Extent[j*2+1]-static_cast<double>(loadedExtent[j*2]))/delta);
               // Second volume
-              double delta2=
-                static_cast<double>(loadedExtent2[j*2+1]-loadedExtent2[j*2]);
-              lowBounds2[j]=static_cast<float>
-                             ((blocks[k].Extent[j*2]-
-                               static_cast<double>(loadedExtent2[j*2]))/delta2);
-              highBounds2[j]=static_cast<float>
-                             ((blocks[k].Extent[j*2+1]-
-                               static_cast<double>(loadedExtent2[j*2]))/delta2);
+              double delta2=static_cast<double>(loadedExtent2[j*2+1]-loadedExtent2[j*2]);
+              lowBounds2[j]=static_cast<float>((blocks[k].Extent[j*2]-static_cast<double>(loadedExtent2[j*2]))/delta2);
+              highBounds2[j]=static_cast<float>((blocks[k].Extent[j*2+1]-static_cast<double>(loadedExtent2[j*2]))/delta2);
               ++j;
               }
             }
@@ -6079,13 +6048,11 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
             j=0;
             while(j<3)
               {
-              double delta=
-                static_cast<double>(loadedExtent[j*2+1]-loadedExtent[j*2]);
+              double delta=static_cast<double>(loadedExtent[j*2+1]-loadedExtent[j*2]);
               lowBounds[j]=static_cast<float>((blocks[k].Extent[j*2]-0.5-static_cast<double>(loadedExtent[j*2]))/delta);
               highBounds[j]=static_cast<float>((blocks[k].Extent[j*2+1]-0.5-static_cast<double>(loadedExtent[j*2]))/delta);
               // Second volume
-              double delta2=
-                static_cast<double>(loadedExtent2[j*2+1]-loadedExtent2[j*2]);
+              double delta2=static_cast<double>(loadedExtent2[j*2+1]-loadedExtent2[j*2]);
               lowBounds2[j]=static_cast<float>((blocks[k].Extent[j*2]-0.5-static_cast<double>(loadedExtent2[j*2]))/delta2);
               highBounds2[j]=static_cast<float>((blocks[k].Extent[j*2+1]-0.5-static_cast<double>(loadedExtent2[j*2]))/delta2);
               ++j;
@@ -6139,11 +6106,9 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
           GLfloat matrix_TextureCoord_1to2[16];   
           for(int c=0;c<4;c++) {
             for(int r=0;r<4;r++) {
-              matrix_TextureCoord_1to2[c*4+r]=
-                static_cast<GLfloat>(mat->Element[c][r]);
+              matrix_TextureCoord_1to2[c*4+r]=static_cast<GLfloat>(mat->Element[c][r]);
             }
           }
-          //vtkUniformVariables *v=this->Program->GetUniformVariables();
           v->SetUniformMatrix("P1toP2",4,4,matrix_TextureCoord_1to2);
 
           // Add inverse matrix
@@ -6154,12 +6119,10 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
           GLfloat matrix_TextureCoord_2to1[16];   
           for(int c=0;c<4;c++) {
             for(int r=0;r<4;r++) {
-              matrix_TextureCoord_2to1[c*4+r]=
-                static_cast<GLfloat>(mat->Element[c][r]);
+              matrix_TextureCoord_2to1[c*4+r]=static_cast<GLfloat>(mat->Element[c][r]);
             }
           }
           mat->Delete();
-          //vtkUniformVariables *v=this->Program->GetUniformVariables();
           v->SetUniformMatrix("P2toP1",4,4,matrix_TextureCoord_2to1);
 
           this->Program->SendUniforms();
@@ -6191,8 +6154,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     i=0;
     while(i<3)
       {
-      double delta=
-        static_cast<double>(loadedExtent[i*2+1]-loadedExtent[i*2]+1);
+      double delta=static_cast<double>(loadedExtent[i*2+1]-loadedExtent[i*2]+1);
       lowBounds[i]=static_cast<float>((realExtent[i*2]+0.5-static_cast<double>(loadedExtent[i*2]))/delta);
       highBounds[i]=static_cast<float>((realExtent[i*2+1]+0.5-static_cast<double>(loadedExtent[i*2]))/delta);
       ++i;
@@ -6203,8 +6165,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     i=0;
     while(i<3)
       {
-      double delta=
-        static_cast<double>(loadedExtent[i*2+1]-loadedExtent[i*2]+1);
+      double delta=static_cast<double>(loadedExtent[i*2+1]-loadedExtent[i*2]+1);
 
       // this->LoadedExtent[i*2]==0, texcoord starts at 0, if realExtent==0
       // otherwise, texcoord start at 1/2N
@@ -6238,8 +6199,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     i=0;
     while(i<3)
       {
-      double delta=
-        static_cast<double>(loadedExtent2[i*2+1]-loadedExtent2[i*2]+1);
+      double delta=static_cast<double>(loadedExtent2[i*2+1]-loadedExtent2[i*2]+1);
       lowBounds2[i]=static_cast<float>((realExtent[i*2]+0.5-static_cast<double>(loadedExtent2[i*2]))/delta);
       highBounds2[i]=static_cast<float>((realExtent[i*2+1]+0.5-static_cast<double>(loadedExtent2[i*2]))/delta);
       ++i;
@@ -6250,8 +6210,7 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     i=0;
     while(i<3)
       {
-      double delta=
-        static_cast<double>(loadedExtent2[i*2+1]-loadedExtent2[i*2]+1);
+      double delta=static_cast<double>(loadedExtent2[i*2+1]-loadedExtent2[i*2]+1);
 
       // this->LoadedExtent[i*2]==0, texcoord starts at 0, if realExtent==0
       // otherwise, texcoord start at 1/2N
@@ -6277,7 +6236,6 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
   assert("check: high_bounds1_less_than1" && highBounds2[1]<=1.0);
   assert("check: high_bounds2_less_than1" && highBounds2[2]<=1.0);
 
-
   vtkUniformVariables *v=this->Program->GetUniformVariables();
   v->SetUniformf("lowBounds",3,lowBounds);
   v->SetUniformf("highBounds",3,highBounds);
@@ -6297,11 +6255,9 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     GLfloat matrix_TextureCoord_1to2[16];   
     for(int c=0;c<4;c++) {
       for(int r=0;r<4;r++) {
-        matrix_TextureCoord_1to2[c*4+r]=
-          static_cast<GLfloat>(mat->Element[c][r]);
+      matrix_TextureCoord_1to2[c*4+r]=static_cast<GLfloat>(mat->Element[c][r]);
       }
     }
-    //vtkUniformVariables *v=this->Program->GetUniformVariables();
     v->SetUniformMatrix("P1toP2",4,4,matrix_TextureCoord_1to2);
 
     // Add inverse matrix
@@ -6312,15 +6268,12 @@ int vtkOpenGLGPUMultiVolumeRayCastMapper::RenderSubVolume(vtkRenderer *ren,
     GLfloat matrix_TextureCoord_2to1[16];   
     for(int c=0;c<4;c++) {
       for(int r=0;r<4;r++) {
-        matrix_TextureCoord_2to1[c*4+r]=
-          static_cast<GLfloat>(mat->Element[c][r]);
+      matrix_TextureCoord_2to1[c*4+r]=static_cast<GLfloat>(mat->Element[c][r]);
       }
     }
     mat->Delete();
-    //vtkUniformVariables *v=this->Program->GetUniformVariables();
     v->SetUniformMatrix("P2toP1",4,4,matrix_TextureCoord_2to1);
 
-    
     this->Program->SendUniforms();
 
   int abort=this->RenderClippedBoundingBox(1,0,1,ren->GetRenderWindow());
@@ -6628,7 +6581,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::BuildProgram(vtkRenderWindow *w,
                                                    int shadeMethod,
                                                    int componentMethod)
 {
-
   assert("pre: valid_raycastMethod" &&
          raycastMethod>= vtkOpenGLGPUVolumeRayCastMapperMethodMIP
          && raycastMethod<=vtkOpenGLGPUVolumeRayCastMapperMethodAdditive);
@@ -6720,7 +6672,6 @@ void vtkOpenGLGPUMultiVolumeRayCastMapper::BuildProgram(vtkRenderWindow *w,
         methodCode=vtkGPUVolumeRayCastMapper_MIPFourDependentFS;
         break;
       case vtkOpenGLGPUVolumeRayCastMapperMethodComposite:
-//        methodCode=vtkGPUVolumeRayCastMapper_CompositeFS;
           methodCode=vtkGPUMultiVolumeRayCastMapper_CompositeFS;
         break;
       case vtkOpenGLGPUVolumeRayCastMapperMethodCompositeMask:
