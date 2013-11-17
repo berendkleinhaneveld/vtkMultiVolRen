@@ -63,6 +63,8 @@ float fValue2;
 vec4 mColor;
 float mValue1;
 float mValue2;
+vec4 dColor;
+float dValue;
 
 // from cropping vs no cropping
 vec4 initialColor();
@@ -81,10 +83,20 @@ vec4 shade2(vec4 value);
 void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, inout float currentOpacity);
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity);
 void shadeMIDA(int volumeNr, vec4 value, float opacity, inout vec4 accumulatedColor, inout float accumulatedOpacity, inout float currentMax);
+void traceNormal(void);
+void traceDifference(void);
 
 void trace(void) {
-	float t = 0.0;
+	if (blendType == 0) {
+		traceNormal();
+	} else if (blendType == 1) {
+		traceDifference();
+	}
+}
 
+void traceNormal(void) {
+	float t = 0.0;
+	
 	initShade();
 
 	// Create temporary values for each of the
@@ -172,8 +184,104 @@ void trace(void) {
 	color2.a = mValue1;
 	
 	// Blend the colors together based on render types
-	// TODO: define sane function for combining the two color values
+	// Blend type 0: render with depth
+	// Blend type 1: add the final images right on top of each other
+	// blend type 2: difference between volumes (especially applicable to dvr)
+	// Blend type 3: similarity between volumes
 	gl_FragColor = color1 + color2;
+}
+
+void traceDifference(void) {
+	float t = 0.0;
+	
+	initShade();
+
+	// Create temporary values for each of the
+	// volumes. They can be used to store temporary
+	// values during ray tracing.
+	fColor = initialColor();
+	fValue1 = 0.0;
+	fValue2 = 0.0;
+	mColor = initialColor();
+	mValue1 = 0.0;
+	mValue2 = 0.0;
+	dColor = initialColor();
+	dValue = 0.0;
+
+	// MIDA:
+	// * accumulatedColor (vec4)	- Color
+	// * accumulatedOpacity (float)	- Value1
+	// * currentMax (float)			- Value2
+
+	// MIP:
+	// * maxColor (vec4)			- Color
+	// * maxOpacity (float)			- Value1
+
+	// DVR:
+	// * currentColor (vec4)		- Color
+	// * currentOpacity (float)		- Value1
+
+	bool inside = true;
+	while (inside) {
+		/* 
+		Calculate the difference between two datasets. For every voxel that lies in
+		both the first and the second dataset the difference between the colors will
+		be calculated and added to the dColor/dValue.
+		Stop condition is at the end of the first dataset, or when dValue is 1.0.
+		*/
+
+		// First check to see if we are also in the second dataset
+		pos2 = vec3(P1toP2 * vec4(pos, 1));
+		if (all(greaterThanEqual(pos2, lowBounds2))
+			&& all(lessThanEqual(pos2, highBounds2)))
+		{
+			vec4 valueVector = texture3D(dataSetTexture, pos);
+			float valueScalar = scalarFromValue(valueVector);
+			float opacity = texture1D(opacityTexture, valueScalar).a;
+
+			// Sample the first dataset
+			shadeDVR(0, valueVector, opacity, fColor, fValue1);
+
+			vec4 valueVector2 = texture3D(dataSetTexture2, pos2);
+			float valueScalar2 = scalarFromValue(valueVector2);
+			float opacity2 = texture1D(opacityTexture2, valueScalar2).a;
+
+			// Sample the second dataset
+			shadeDVR(1, valueVector2, opacity2, mColor, mValue1);
+
+			vec4 diffColor = abs(fColor - mColor);
+			float diffValue = abs(fValue1 - mValue1);
+
+			// TODO: replace 0.1 with a decent multiplier, to be set
+			// by an interface slider
+			diffColor = (diffColor * diffValue) * 0.1;
+			dColor = dColor + diffColor;
+			float remainOpacity = 1.0 - dValue;
+			dValue = dValue + (diffValue * remainOpacity) * 0.1;
+
+			// Reset fColor and mColor
+			fColor = initialColor();
+			fValue1 = 0.0;
+			mColor = initialColor();
+			mValue1 = 0.0;
+		}
+		
+		pos = pos + rayDir;
+		t += 1.0;
+
+		// Halt when you dValue is saturated
+		bool shouldContinue = (1.0 - dValue) >= 0.0039;
+		inside = t < tMax && all(greaterThanEqual(pos, lowBounds))
+			&& all(lessThanEqual(pos, highBounds))
+			&& shouldContinue;
+	}
+	
+	// Blend the colors together based on render types
+	// Blend type 0: render with depth
+	// Blend type 1: add the final images right on top of each other
+	// blend type 2: difference between volumes (especially applicable to dvr)
+	// Blend type 3: similarity between volumes
+	gl_FragColor = dColor + dValue;
 }
 
 /**
