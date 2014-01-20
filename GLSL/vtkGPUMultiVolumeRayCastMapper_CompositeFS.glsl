@@ -33,6 +33,10 @@ uniform float lowerBound1;
 uniform float lowerBound2;
 uniform float upperBound1;
 uniform float upperBound2;
+uniform float window1;
+uniform float window2;
+uniform float level1;
+uniform float level2;
 uniform float brightness1;
 uniform float brightness2;
 // Shader types of the fixed and moving datasets

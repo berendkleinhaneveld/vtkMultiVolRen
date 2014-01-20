@@ -126,6 +126,22 @@ public:
   vtkSetMacro(LowerBound2, float);
   vtkGetMacro(LowerBound2, float);
 
+  float Window1;
+  vtkSetMacro(Window1, float);
+  vtkGetMacro(Window1, float);
+  
+  float Window2;
+  vtkSetMacro(Window2, float);
+  vtkGetMacro(Window2, float);
+
+  float Level1;
+  vtkSetMacro(Level1, float);
+  vtkGetMacro(Level1, float);
+
+  float Level2;
+  vtkSetMacro(Level2, float);
+  vtkGetMacro(Level2, float);
+
   // Description:
   // Change brightness parameter of fixed data set
   float Brightness1;

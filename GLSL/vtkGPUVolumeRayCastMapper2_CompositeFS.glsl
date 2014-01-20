@@ -24,6 +24,8 @@ uniform sampler1D opacityTexture;
 uniform int shaderType;
 uniform float lowerBound;
 uniform float upperBound;
+uniform float window;
+uniform float level;
 uniform float brightness;
 
 // Bounds from the dataset
