@@ -109,7 +109,8 @@ void trace(void) {
 			shouldContinue = (1.0 - fValue1) >= 0.0039;
 		}
 
-		inside = t < tMax && all(greaterThanEqual(pos, lowBounds))
+		inside = t < tMax
+			&& all(greaterThanEqual(pos, lowBounds))
 			&& all(lessThanEqual(pos, highBounds))
 			&& shouldContinue;
 	}
@@ -148,14 +149,14 @@ void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, ino
  * inout maxOpacity: opacity that goes together with the maximum color
  */
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity) {
-	float valueScalar = scalarFromValue(value);
-	float shadedValue = shade(value).r;
-	if (shadedValue > maxColor.r && shadedValue >= lowerBound && shadedValue <= upperBound)
+	float scalarValue = scalarFromValue(value);
+	float colorValue = colorFromValue(value).r * opacity;
+
+	if (colorValue > maxColor.r && scalarValue >= lowerBound && scalarValue <= upperBound)
 	{
-		maxColor = vec4(shadedValue);
+		maxColor = vec4(colorValue);
 		maxOpacity = opacity;
 	}
-	maxOpacity = 1.0;
 }
 
 /**
