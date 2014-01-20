@@ -163,12 +163,15 @@ void traceNormal(void) {
 		bool shouldContinue = true;
 		if (shaderType1 == 0 && shaderType2 == 0) {
 			shouldContinue = (1.0 - fValue1) >= 0.0039;
-		} else if (shaderType1 != 0 && shaderType2 == 0) {
+		} else if (shaderType1 == 1 && shaderType2 == 0) {
 			shouldContinue = (1.0 - mValue1) >= 0.0039;
+		} else if (shaderType1 == 0 && shaderType2 == 1) {
+			shouldContinue = (1.0 - fValue1) >= 0.0039;
 		}
 
-		inside = t < tMax && all(greaterThanEqual(pos, lowBounds))
-			&& all(lessThanEqual(pos, highBounds))
+		inside = t < tMax
+			&& (all(greaterThanEqual(pos, lowBounds)) || all(greaterThanEqual(pos2, lowBounds2)))
+			&& (all(lessThanEqual(pos, highBounds)) || all(lessThanEqual(pos2, highBounds2)))
 			&& shouldContinue;
 	}
 
@@ -182,6 +185,16 @@ void traceNormal(void) {
 		color2 = fColor * brightness2;
 	}
 	color2.a = mValue1;
+
+	if (shaderType1 == 1 && shaderType2 == 1) {
+		color1.r = color1.r * 1.0;
+		color1.g = color1.g * 0.5;
+		color1.b = color1.b * 0.0;
+
+		color2.r = color2.r * 0.0;
+		color2.g = color2.g * 0.5;
+		color2.b = color2.b * 1.0;
+	}
 	
 	// Blend the colors together based on render types
 	// Blend type 0: render with depth
@@ -314,22 +327,21 @@ void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, ino
  * inout maxOpacity: opacity that goes together with the maximum color
  */
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity) {
-	float valueScalar = scalarFromValue(value);
-	float shadedValue;
+	float colorValue;
 	float lowerBound;
 	float upperBound;
 	if (volumeNr == 0) {
-		shadedValue = shade(value).r;
+		colorValue = colorFromValue(value).r;
 		lowerBound = lowerBound1;
 		upperBound = upperBound1;
 	} else {
-		shadedValue = shade2(value).r;
+		colorValue = colorFromValue2(value).r;
 		lowerBound = lowerBound2;
 		upperBound = upperBound2;
 	}
-	if (shadedValue > maxColor.r && shadedValue >= lowerBound && shadedValue <= upperBound)
+	if (colorValue > maxColor.r && colorValue >= lowerBound && colorValue <= upperBound)
 	{
-		maxColor = vec4(valueScalar);
+		maxColor = vec4(colorValue);
 		maxOpacity = opacity;
 	}
 }
