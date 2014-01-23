@@ -45,7 +45,6 @@ vec4 initialColor();
 // from 1 vs 4 component shader.
 float scalarFromValue(vec4 value);
 vec4 colorFromValue(vec4 value);
-vec4 colorFromValue2(vec4 value);
 
 // from noshade vs shade.
 void initShade();
@@ -60,7 +59,8 @@ void shadeDVR(int volumeNr, vec4 value, float opacity, inout vec4 destColor, ino
 void shadeMIP(int volumeNr, vec4 value, float opacity, inout vec4 maxColor, inout float maxOpacity);
 void shadeMIDA(int volumeNr, vec4 value, float opacity, inout vec4 accumulatedColor, inout float accumulatedOpacity, inout float currentMax);
 
-void trace(void) {
+void trace(void)
+{
 	// Temp color can be used to put blended values
 	// into during rendering
 	float t = 0.0;
@@ -74,6 +74,10 @@ void trace(void) {
 	fColor = initialColor();
 	fValue1 = 0.0;
 	fValue2 = 0.0;
+
+	if (shaderType == 2) {
+		fValue2 = lowerBound;
+	}
 
 	// MIDA:
 	// * accumulatedColor (vec4)	- Color
@@ -96,12 +100,15 @@ void trace(void) {
 
 		// Sample the dataset
 		if (shaderType == 0) {
+			// fColor = currentColor, fValue1 = currentOpacity
 			shadeDVR(0, valueVector, opacity, fColor, fValue1);
 		} else if (shaderType == 1) {
+			// fColor = maxColor, fValue1 = maxOpacity
 			shadeMIP(0, valueVector, opacity, fColor, fValue1);
-		} else if (shaderType == 2) {
-			shadeMIDA(0, valueVector, opacity, fColor, fValue1, fValue2);
-		}
+		} 
+		// else if (shaderType == 2) {
+		// 	shadeMIDA(0, valueVector, opacity, fColor, fValue1, fValue2);
+		// }
 
 		pos = pos + rayDir;
 		t += 1.0;
@@ -116,13 +123,14 @@ void trace(void) {
 			&& all(lessThanEqual(pos, highBounds))
 			&& shouldContinue;
 	}
-	
-	if (shaderType == 2) {
-		fColor = fColor * brightness;
-	}
+
+	// if (shaderType == 2) {
+	// 	fColor = fColor * brightness;
+	// }
 
 	gl_FragColor = fColor;
 	gl_FragColor.a = fValue1;
+	// gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 
 /**

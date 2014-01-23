@@ -143,10 +143,10 @@ extern const char *vtkGPUVolumeRayCastMapper_MinIPCroppingFS;
 extern const char *vtkGPUVolumeRayCastMapper_MinIPNoCroppingFS;
 extern const char *vtkGPUVolumeRayCastMapper_CompositeMaskFS;
 extern const char *vtkGPUVolumeRayCastMapper_CompositeBinaryMaskFS;
-extern const char *vtkGPUVolumeRayCastMapper2_NoShadeFS;
-extern const char *vtkGPUVolumeRayCastMapper2_ShadeFS;
-extern const char *vtkGPUVolumeRayCastMapper2_OneComponentFS;
-extern const char *vtkGPUVolumeRayCastMapper2_FourComponentsFS;
+extern const char *vtkGPUVolumeRayCastMapper_NoShadeFS;
+extern const char *vtkGPUVolumeRayCastMapper_ShadeFS;
+extern const char *vtkGPUVolumeRayCastMapper_OneComponentFS;
+extern const char *vtkGPUVolumeRayCastMapper_FourComponentsFS;
 extern const char *vtkGPUVolumeRayCastMapper_AdditiveFS;
 extern const char *vtkGPUVolumeRayCastMapper_AdditiveCroppingFS;
 extern const char *vtkGPUVolumeRayCastMapper_AdditiveNoCroppingFS;
@@ -2145,15 +2145,6 @@ void vtkOpenGLGPUVolumeRayCastMapper2::LoadExtensions(
   this->UnsupportedRequiredExtensions =
     new vtkUnsupportedRequiredExtensionsStringStream;
 
-  // It does not work on Apple OS X Snow Leopard with nVidia.
-  // There is a bug in the OpenGL driver with an error in the
-  // Cg compiler about an infinite loop.
-#ifdef APPLE_SNOW_LEOPARD_BUG
- #ifdef __APPLE__
-  this->LoadExtensionsSucceeded=0;
-  return;
- #endif
-#endif
 
   // Assume success
   this->LoadExtensionsSucceeded=1;
@@ -4011,7 +4002,7 @@ void vtkOpenGLGPUVolumeRayCastMapper2::PreRender(vtkRenderer *ren,
       "Rendering failed because the following OpenGL extensions "
       "are required but not supported: " <<
       (this->UnsupportedRequiredExtensions->Stream.str()).c_str());
-      return;
+    return;
     }
 
   // Create the OpenGL object that we need
@@ -4254,9 +4245,6 @@ void vtkOpenGLGPUVolumeRayCastMapper2::PreRender(vtkRenderer *ren,
   int ivalue=0;
   v->SetUniformi("dataSetTexture",1,&ivalue);
 
-  int numberOfDataSets=1;
-  v->SetUniformi("dataSetsCount", 1, &numberOfDataSets);
-  
   int shaderTypeValue=this->ShaderType;
   v->SetUniformi("shaderType", 1, &shaderTypeValue);
   float minValue=this->LowerBound;
@@ -4269,7 +4257,6 @@ void vtkOpenGLGPUVolumeRayCastMapper2::PreRender(vtkRenderer *ren,
   v->SetUniformf("level", 1, &level);
   float brightness=this->Brightness;
   v->SetUniformf("brightness", 1, &brightness);
-
 
   if(this->MaskInput!=0)
     {
@@ -4346,18 +4333,6 @@ void vtkOpenGLGPUVolumeRayCastMapper2::PreRender(vtkRenderer *ren,
     }
 
   this->CheckFrameBufferStatus();
-
-#ifdef APPLE_SNOW_LEOPARD_BUG
-  this->Program->SendUniforms();
-  cout << "BEFORE isValid2"  << endl;
-  if(!this->Program->IsValid())
-    {
-    cout <<this->Program->GetLastValidateLog() << endl;
-    this->Program->PrintActiveUniformVariablesOnCout();
-    v->Print(cout);
-    }
-  cout << "AFTER isValid2"  << endl;
-#endif
 
 
   fvalue[0]=static_cast<float>(lowerLeft[0]);
@@ -6480,11 +6455,11 @@ void vtkOpenGLGPUVolumeRayCastMapper2::BuildProgram(vtkRenderWindow *w,
       const char *componentCode;
       if(componentMethod==vtkOpenGLGPUVolumeRayCastMapperComponentOne)
         {
-        componentCode=vtkGPUVolumeRayCastMapper2_OneComponentFS;
+        componentCode=vtkGPUVolumeRayCastMapper_OneComponentFS;
         }
       else
         {
-        componentCode=vtkGPUVolumeRayCastMapper2_FourComponentsFS;
+        componentCode=vtkGPUVolumeRayCastMapper_FourComponentsFS;
         }
       this->Component->SetSourceCode(componentCode);
       }
@@ -6511,11 +6486,11 @@ void vtkOpenGLGPUVolumeRayCastMapper2::BuildProgram(vtkRenderWindow *w,
       const char *shadeCode;
       if(shadeMethod==vtkOpenGLGPUVolumeRayCastMapperShadeYes)
         {
-        shadeCode=vtkGPUVolumeRayCastMapper2_ShadeFS;
+        shadeCode=vtkGPUVolumeRayCastMapper_ShadeFS;
         }
       else
         {
-        shadeCode=vtkGPUVolumeRayCastMapper2_NoShadeFS;
+        shadeCode=vtkGPUVolumeRayCastMapper_NoShadeFS;
         }
       this->Shade->SetSourceCode(shadeCode);
       }

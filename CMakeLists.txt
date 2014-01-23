@@ -82,10 +82,10 @@ SET(GLSL_SOURCES
   vtkGPUMultiVolumeRayCastMapper_NoShadeFS
   vtkGPUMultiVolumeRayCastMapper_ShadeFS
   vtkGPUVolumeRayCastMapper2_CompositeFS
-  vtkGPUVolumeRayCastMapper2_OneComponentFS
-  vtkGPUVolumeRayCastMapper2_FourComponentsFS
-  vtkGPUVolumeRayCastMapper2_NoShadeFS
-  vtkGPUVolumeRayCastMapper2_ShadeFS
+  # vtkGPUVolumeRayCastMapper2_OneComponentFS
+  # vtkGPUVolumeRayCastMapper2_FourComponentsFS
+  # vtkGPUVolumeRayCastMapper2_NoShadeFS
+  # vtkGPUVolumeRayCastMapper2_ShadeFS
 )
 
 # -----------------------------------------------------------------------------
