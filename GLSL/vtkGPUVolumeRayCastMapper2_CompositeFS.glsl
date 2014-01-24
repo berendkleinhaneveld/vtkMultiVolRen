@@ -129,7 +129,11 @@ void trace(void)
 	// }
 
 	gl_FragColor = fColor;
-	gl_FragColor.a = fValue1;
+	if (shaderType == 0) {
+		gl_FragColor.a = fValue1;
+	} else if (shaderType == 1) {
+		gl_FragColor.a = 1.0;
+	}
 	// gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 

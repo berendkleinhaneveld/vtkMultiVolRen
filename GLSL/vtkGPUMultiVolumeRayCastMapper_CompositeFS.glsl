@@ -190,6 +190,13 @@ void traceNormal(void) {
 	}
 	color2.a = mValue1;
 
+	if (shaderType1 == 1) {
+		color1.a = 1.0;
+	}
+	if (shaderType2 == 1) {
+		color2.a = 1.0;
+	}
+
 	if (shaderType1 == 1 && shaderType2 == 1) {
 		color1.r = color1.r * 1.0;
 		color1.g = color1.g * 0.5;
