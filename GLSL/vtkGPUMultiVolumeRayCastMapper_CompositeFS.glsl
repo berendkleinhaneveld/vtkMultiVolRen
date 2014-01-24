@@ -174,8 +174,8 @@ void traceNormal(void) {
 		}
 
 		inside = t < tMax
-			&& (all(greaterThanEqual(pos, lowBounds)) || all(greaterThanEqual(pos2, lowBounds2)))
-			&& (all(lessThanEqual(pos, highBounds)) || all(lessThanEqual(pos2, highBounds2)))
+			&& all(greaterThanEqual(pos, lowBounds))
+			&& all(lessThanEqual(pos, highBounds))
 			&& shouldContinue;
 	}
 
