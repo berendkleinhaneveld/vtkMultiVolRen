@@ -105,7 +105,7 @@ FOREACH(file ${GLSL_SOURCES})
     DEPENDS ${src} vtkEncodeString
     # COMMAND ${VTK_ENCODESTRING_EXE}
     COMMAND vtkEncodeString-6.1
-    ARGS ${res} ${src} ${file} --build-header vtkSystemIncludes.h
+    ARGS ${res} ${src} ${file} --build-header VTKRENDERINGVOLUMEOPENGL_EXPORT vtkRenderingVolumeOpenGLModule.h
   )
   SET(KIT_EXTRA_SRCS ${KIT_EXTRA_SRCS} ${res})
 ENDFOREACH(file)
