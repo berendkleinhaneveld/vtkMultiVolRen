@@ -15,9 +15,9 @@ SET(KIT vtkGPUMultiVolumeRenderDemo)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4)
 
-IF(POLICY CMP0017)
-  CMAKE_POLICY(SET CMP0017 NEW)
-ENDIF(POLICY CMP0017)
+IF(POLICY CMP0042)
+  CMAKE_POLICY(SET CMP0042 NEW)
+ENDIF(POLICY CMP0042)
 
 # On some platforms (OSX) this may not be defined, so search for it
 IF(NOT DEFINED CMAKE_INSTALL_NAME_TOOL)
@@ -96,7 +96,7 @@ FOREACH(file ${GLSL_SOURCES})
     OUTPUT ${res} ${resh}
     DEPENDS ${src} vtkEncodeString
     # COMMAND ${VTK_ENCODESTRING_EXE}
-    COMMAND vtkEncodeString-6.0
+    COMMAND vtkEncodeString-6.3
     ARGS ${res} ${src} ${file} --build-header vtkSystemIncludes.h
   )
   SET(KIT_EXTRA_SRCS ${KIT_EXTRA_SRCS} ${res})
@@ -122,7 +122,7 @@ SET(VTK_LOCAL_LIBS
   vtkIOCore
   vtkRenderingCore
   vtkRenderingVolume
-  vtkRenderingFreeTypeOpenGL
+  vtkRenderingFreeType
   vtkRenderingVolumeOpenGL
   vtkInteractionWidgets
   vtkIOXML
