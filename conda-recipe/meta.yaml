@@ -1,0 +1,43 @@
+package:
+  name: vtkmultivolren
+  version: "0.1.0"
+
+source:
+  path: ..
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - mesa # [linux]
+    - gcc # [linux]
+    - python
+    - cmake
+    - vtk 6.3.0
+  run:
+    - mesa # [linux]
+    - libgcc # [linux]
+    - python
+
+test:
+  imports:
+    - vtk
+    - vtk.vtkChartsCore
+    - vtk.vtkCommonCore
+    - vtk.vtkFiltersCore
+    - vtk.vtkFiltersGeneric
+    - vtk.vtkGeovisCore
+    - vtk.vtkFiltersHybrid
+    - vtk.vtkIOCore
+    - vtk.vtkImagingCore
+    - vtk.vtkInfovisCore
+    - vtk.vtkRenderingCore
+    - vtk.vtkViewsCore
+    - vtk.vtkRenderingVolume
+    - vtk.vtkInteractionWidgets
+
+about:
+  home: https://github.com/berendkleinhaneveld/vtkMultiVolRen
+  license: BSD
+
